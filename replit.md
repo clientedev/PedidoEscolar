@@ -44,6 +44,7 @@ The system implements a four-stage procurement workflow:
 - Session management with configurable secret keys
 - File upload validation and secure filename handling
 - Role-based access control for administrative functions
+- Administrator-only request deletion with confirmation dialogs
 
 ## PDF Reporting System
 - Individual request PDF generation with complete details, attachments list, and status history

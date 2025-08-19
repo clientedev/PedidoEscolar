@@ -394,6 +394,36 @@ def generate_general_pdf():
         flash('Erro ao gerar relatório. Tente novamente.', 'danger')
         return redirect(url_for('dashboard'))
 
+@app.route('/request/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_request(id):
+    """Excluir um pedido (apenas administradores)"""
+    if not current_user.is_admin:
+        flash('Acesso negado. Apenas administradores podem excluir pedidos.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    request_obj = AcquisitionRequest.query.get_or_404(id)
+    
+    try:
+        # Excluir arquivos anexos do sistema de arquivos
+        for attachment in request_obj.attachments:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], attachment.filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        
+        # O SQLAlchemy cuidará da cascata para anexos e mudanças de status
+        db.session.delete(request_obj)
+        db.session.commit()
+        
+        flash(f'Pedido #{request_obj.id} "{request_obj.title}" foi excluído com sucesso!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Erro ao excluir pedido {id}: {e}")
+        flash('Erro ao excluir o pedido. Tente novamente.', 'danger')
+    
+    return redirect(url_for('dashboard'))
+
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('base.html', error_message='Página não encontrada'), 404

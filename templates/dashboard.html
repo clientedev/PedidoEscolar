@@ -114,7 +114,7 @@
                                     'a_caminho': 'A Caminho',
                                     'finalizado': 'Finalizado'
                                 } %}
-                                <span class="badge bg-{{ status_classes.get(request.status, 'secondary') }}">
+                                <span class="badge bg-{{ status_classes.get(request.status, 'secondary') }} text-white">
                                     {{ status_names.get(request.status, request.status) }}
                                 </span>
                             </td>
@@ -144,6 +144,14 @@
                                     <a href="{{ url_for('generate_request_pdf_route', id=request.id) }}" class="btn btn-sm btn-outline-success" title="Gerar PDF">
                                         <i class="fas fa-file-pdf"></i>
                                     </a>
+                                    {% if current_user.is_admin %}
+                                    <form method="POST" action="{{ url_for('delete_request', id=request.id) }}" 
+                                          class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>

@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import or_, desc
 from app import app, db
 from models import User, AcquisitionRequest, Attachment, StatusChange
-from forms import LoginForm, AcquisitionRequestForm, EditRequestForm, UserForm, SearchForm
+from forms import LoginForm, AcquisitionRequestForm, EditRequestForm, UserForm, SearchForm, FirstPasswordForm
 from pdf_generator import generate_request_pdf, generate_general_report
 
 def allowed_file(filename):
@@ -81,14 +81,27 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user and check_password_hash(user.password_hash, form.password.data):
-            if not user.is_active:
-                flash('Sua conta está desativada. Entre em contato com o administrador.', 'danger')
-                return redirect(url_for('login'))
-            login_user(user, remember=form.remember_me.data)
-            next_page = request.args.get('next')
-            flash(f'Bem-vindo, {user.full_name}!', 'success')
-            return redirect(next_page) if next_page else redirect(url_for('dashboard'))
+        if user:
+            # If user has no password set, they need username only for first login
+            if not user.password_hash and user.needs_password_reset:
+                if not user.is_active:
+                    flash('Sua conta está desativada. Entre em contato com o administrador.', 'danger')
+                    return redirect(url_for('login'))
+                login_user(user)
+                return redirect(url_for('first_password'))
+            # Normal password authentication
+            elif user.password_hash and check_password_hash(user.password_hash, form.password.data):
+                if not user.is_active:
+                    flash('Sua conta está desativada. Entre em contato com o administrador.', 'danger')
+                    return redirect(url_for('login'))
+                # Check if user needs to set password for first time  
+                if user.needs_password_reset:
+                    login_user(user)
+                    return redirect(url_for('first_password'))
+                login_user(user, remember=form.remember_me.data)
+                next_page = request.args.get('next')
+                flash(f'Bem-vindo, {user.full_name}!', 'success')
+                return redirect(next_page) if next_page else redirect(url_for('dashboard'))
         flash('Usuário ou senha incorretos.', 'danger')
     
     return render_template('login.html', form=form)
@@ -100,30 +113,45 @@ def logout():
     flash('Você foi desconectado com sucesso.', 'info')
     return redirect(url_for('login'))
 
+@app.route('/first-password', methods=['GET', 'POST'])
+@login_required
+def first_password():
+    # Only allow users who need password reset
+    if not current_user.needs_password_reset:
+        return redirect(url_for('dashboard'))
+    
+    form = FirstPasswordForm()
+    if form.validate_on_submit():
+        current_user.password_hash = generate_password_hash(form.new_password.data)
+        current_user.needs_password_reset = False
+        db.session.commit()
+        flash('Sua senha foi definida com sucesso!', 'success')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('first_password.html', form=form)
+
 @app.route('/request/new', methods=['GET', 'POST'])
 @login_required
 def new_request():
     form = AcquisitionRequestForm()
     if form.validate_on_submit():
         # Create new request
-        request_obj = AcquisitionRequest(
-            title=form.title.data,
-            description=form.description.data,
-            observations=form.observations.data,
-            created_by_id=current_user.id,
-            responsible_id=form.responsible_id.data if form.responsible_id.data > 0 else None
-        )
+        request_obj = AcquisitionRequest()
+        request_obj.title = form.title.data
+        request_obj.description = form.description.data
+        request_obj.observations = form.observations.data
+        request_obj.created_by_id = current_user.id
+        request_obj.responsible_id = form.responsible_id.data if form.responsible_id.data > 0 else None
         db.session.add(request_obj)
         db.session.flush()  # Get the ID
         
         # Create initial status change record
-        status_change = StatusChange(
-            old_status=None,
-            new_status='orcamento',
-            request_id=request_obj.id,
-            changed_by_id=current_user.id,
-            comments='Pedido criado'
-        )
+        status_change = StatusChange()
+        status_change.old_status = None
+        status_change.new_status = 'orcamento'
+        status_change.request_id = request_obj.id
+        status_change.changed_by_id = current_user.id
+        status_change.comments = 'Pedido criado'
         db.session.add(status_change)
         
         # Handle file uploads
@@ -132,13 +160,12 @@ def new_request():
             if file and file.filename:
                 unique_filename, original_filename, file_size = save_file(file)
                 if unique_filename:
-                    attachment = Attachment(
-                        filename=unique_filename,
-                        original_filename=original_filename,
-                        file_size=file_size,
-                        request_id=request_obj.id,
-                        uploaded_by_id=current_user.id
-                    )
+                    attachment = Attachment()
+                    attachment.filename = unique_filename
+                    attachment.original_filename = original_filename
+                    attachment.file_size = file_size
+                    attachment.request_id = request_obj.id
+                    attachment.uploaded_by_id = current_user.id
                     db.session.add(attachment)
                     uploaded_files.append(original_filename)
         
@@ -181,13 +208,12 @@ def edit_request(id):
         
         # Record status change if status changed
         if old_status != request_obj.status:
-            status_change = StatusChange(
-                old_status=old_status,
-                new_status=request_obj.status,
-                request_id=request_obj.id,
-                changed_by_id=current_user.id,
-                comments=form.change_comments.data
-            )
+            status_change = StatusChange()
+            status_change.old_status = old_status
+            status_change.new_status = request_obj.status
+            status_change.request_id = request_obj.id
+            status_change.changed_by_id = current_user.id
+            status_change.comments = form.change_comments.data
             db.session.add(status_change)
         
         # Handle new file uploads
@@ -196,13 +222,12 @@ def edit_request(id):
             if file and file.filename:
                 unique_filename, original_filename, file_size = save_file(file)
                 if unique_filename:
-                    attachment = Attachment(
-                        filename=unique_filename,
-                        original_filename=original_filename,
-                        file_size=file_size,
-                        request_id=request_obj.id,
-                        uploaded_by_id=current_user.id
-                    )
+                    attachment = Attachment()
+                    attachment.filename = unique_filename
+                    attachment.original_filename = original_filename
+                    attachment.file_size = file_size
+                    attachment.request_id = request_obj.id
+                    attachment.uploaded_by_id = current_user.id
                     db.session.add(attachment)
                     uploaded_files.append(original_filename)
         
@@ -292,17 +317,18 @@ def new_user():
     
     form = UserForm()
     if form.validate_on_submit():
-        user = User(
-            username=form.username.data,
-            email=form.email.data,
-            full_name=form.full_name.data,
-            password_hash=generate_password_hash(form.password.data),
-            is_admin=form.is_admin.data,
-            is_active=form.is_active.data
-        )
+        # Create new user without password, they will set it on first login
+        user = User()
+        user.username = form.username.data
+        user.email = form.email.data
+        user.full_name = form.full_name.data
+        user.is_admin = form.is_admin.data
+        user.active = form.is_active.data
+        user.needs_password_reset = True  # User must set password on first login
+        # Don't set password_hash - it will be None until user sets it
         db.session.add(user)
         db.session.commit()
-        flash(f'Usuário "{user.full_name}" criado com sucesso!', 'success')
+        flash(f'Usuário "{user.full_name}" criado com sucesso! Ele deverá definir uma senha no primeiro login.', 'success')
         return redirect(url_for('user_management'))
     
     return render_template('user_management.html', form=form, title='Novo Usuário')
@@ -322,10 +348,11 @@ def edit_user(id):
         user.email = form.email.data
         user.full_name = form.full_name.data
         user.is_admin = form.is_admin.data
-        user.is_active = form.is_active.data
+        user.active = form.is_active.data
         
         if form.password.data:
             user.password_hash = generate_password_hash(form.password.data)
+            user.needs_password_reset = False
         
         db.session.commit()
         flash(f'Usuário "{user.full_name}" atualizado com sucesso!', 'success')

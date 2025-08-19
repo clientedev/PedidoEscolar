@@ -1,6 +1,6 @@
 # Overview
 
-This is a Flask-based acquisition management system designed for Escola Morvan Figueiredo. The application manages procurement requests, allowing users to create, track, and manage purchase orders through different status stages. The system includes user authentication, file uploads for budget attachments, status tracking, administrative capabilities, and comprehensive PDF reporting functionality with sample data for demonstration.
+This is a Flask-based acquisition management system designed for Escola SENAI "Morvan Figueiredo". The application manages procurement requests, allowing users to create, track, and manage purchase orders through different status stages. The system includes user authentication, file uploads for budget attachments, status tracking, administrative capabilities, and comprehensive PDF reporting functionality with sample data for demonstration.
 
 # User Preferences
 

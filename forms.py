@@ -25,7 +25,7 @@ class AcquisitionRequestForm(FlaskForm):
         super(AcquisitionRequestForm, self).__init__(*args, **kwargs)
         # Populate responsible choices with active users
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
-            (user.id, user.full_name) for user in User.query.filter_by(is_active=True).all()
+            (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
         ]
 
 class EditRequestForm(FlaskForm):
@@ -45,7 +45,7 @@ class EditRequestForm(FlaskForm):
         super(EditRequestForm, self).__init__(*args, **kwargs)
         self.status.choices = AcquisitionRequest.STATUS_CHOICES
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
-            (user.id, user.full_name) for user in User.query.filter_by(is_active=True).all()
+            (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
         ]
 
 class UserForm(FlaskForm):
@@ -73,6 +73,15 @@ class UserForm(FlaskForm):
             if user is not None:
                 raise ValidationError('Este email já está em uso.')
 
+class FirstPasswordForm(FlaskForm):
+    new_password = PasswordField('Nova Senha', validators=[DataRequired(), Length(min=6, max=128)])
+    confirm_password = PasswordField('Confirmar Senha', validators=[DataRequired(), Length(min=6, max=128)])
+    submit = SubmitField('Definir Senha')
+    
+    def validate_confirm_password(self, confirm_password):
+        if self.new_password.data != confirm_password.data:
+            raise ValidationError('As senhas não coincidem.')
+
 class SearchForm(FlaskForm):
     search = StringField('Buscar', validators=[Optional(), Length(max=100)])
     status_filter = SelectField('Filtrar por Status', validators=[Optional()])
@@ -83,5 +92,5 @@ class SearchForm(FlaskForm):
         super(SearchForm, self).__init__(*args, **kwargs)
         self.status_filter.choices = [('', 'Todos os status')] + AcquisitionRequest.STATUS_CHOICES
         self.responsible_filter.choices = [(0, 'Todos os responsáveis')] + [
-            (user.id, user.full_name) for user in User.query.filter_by(is_active=True).all()
+            (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
         ]

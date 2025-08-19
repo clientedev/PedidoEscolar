@@ -55,13 +55,12 @@ with app.app_context():
     
     admin_user = User.query.filter_by(username='admin').first()
     if not admin_user:
-        admin_user = User(
-            username='admin',
-            email='admin@escolamorvanfigueiredo.edu.br',
-            password_hash=generate_password_hash('admin123'),
-            is_admin=True,
-            full_name='Administrador'
-        )
+        admin_user = User()
+        admin_user.username = 'admin'
+        admin_user.email = 'admin@senaimorvanfigueiredo.edu.br'
+        admin_user.password_hash = generate_password_hash('admin123')
+        admin_user.is_admin = True
+        admin_user.full_name = 'Administrador'
         db.session.add(admin_user)
         db.session.commit()
         print("Admin user created: username=admin, password=admin123")

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-{{ 'edit' if request else 'plus' }} me-2"></i>{{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.title.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="4") }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.description.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {% if form.status %}
+                                {{ form.status.label(class="form-label") }}
+                                {{ form.status(class="form-select") }}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.responsible_id.label(class="form-label") }}
+                            {{ form.responsible_id(class="form-select") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            {{ form.observations.label(class="form-label") }}
+                            {{ form.observations(class="form-control", rows="3") }}
+                            {% if form.observations.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.observations.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if form.change_comments %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            {{ form.change_comments.label(class="form-label") }}
+                            {{ form.change_comments(class="form-control", rows="2") }}
+                            <div class="form-text">Descreva as alterações realizadas (opcional)</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            {{ form.attachments.label(class="form-label") }}
+                            {{ form.attachments(class="form-control", multiple=True) }}
+                            <div class="form-text">
+                                Formatos aceitos: PDF, Word, Excel, PNG, JPG (máx. 16MB cada)
+                            </div>
+                            {% if form.attachments.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.attachments.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Show existing attachments for edit form -->
+                    {% if request and request.attachments.count() > 0 %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label class="form-label">Anexos Existentes</label>
+                            <div class="border rounded p-3">
+                                {% for attachment in request.attachments %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <i class="fas fa-file me-2"></i>
+                                        <a href="{{ url_for('uploaded_file', filename=attachment.filename) }}" target="_blank">
+                                            {{ attachment.original_filename }}
+                                        </a>
+                                        <small class="text-muted ms-2">
+                                            ({{ "%.1f"|format(attachment.file_size / 1024) }} KB)
+                                        </small>
+                                    </div>
+                                    {% if current_user.is_admin or attachment.uploaded_by_id == current_user.id %}
+                                    <form method="POST" action="{{ url_for('delete_attachment', id=attachment.id) }}" 
+                                          class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este anexo?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('view_request', id=request.id) if request else url_for('dashboard') }}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Cancelar
+                        </a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-resize textareas
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,235 @@
+/* Custom styles for Escola Morvan Figueiredo Acquisition System */
+
+/* Timeline styles for status history */
+.timeline {
+    position: relative;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    color: var(--bs-primary);
+}
+
+.timeline-marker i {
+    font-size: 0.75rem;
+}
+
+.timeline-content {
+    padding-bottom: 1rem;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 0.375rem;
+    top: 1.25rem;
+    bottom: -1rem;
+    width: 2px;
+    background-color: var(--bs-border-color);
+}
+
+/* File upload styling improvements */
+.form-control[type="file"] {
+    border: 2px dashed var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
+    background-color: var(--bs-body-bg);
+    transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+}
+
+.form-control[type="file"]:hover {
+    border-color: var(--bs-primary);
+    background-color: var(--bs-primary-bg-subtle);
+}
+
+/* Status badge styling */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+}
+
+/* Card hover effects */
+.card {
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+/* Table row hover effects */
+.table-hover tbody tr:hover {
+    background-color: var(--bs-table-hover-bg);
+}
+
+/* Navbar brand styling */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+/* Button group spacing */
+.btn + .btn {
+    margin-left: 0.25rem;
+}
+
+/* Alert styling improvements */
+.alert {
+    border: none;
+    border-radius: var(--bs-border-radius-lg);
+}
+
+/* Form validation styling */
+.is-invalid {
+    border-color: var(--bs-danger) !important;
+}
+
+.invalid-feedback {
+    font-size: 0.875rem;
+}
+
+/* Loading spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .table-responsive {
+        border: none;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn-group-vertical .btn {
+        margin-bottom: 0.25rem;
+    }
+    
+    .timeline-item {
+        padding-left: 1.5rem;
+    }
+    
+    .timeline-marker {
+        left: -0.25rem;
+    }
+    
+    .timeline-item:not(:last-child)::before {
+        left: 0.125rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .btn,
+    .alert,
+    .card-header .btn {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .container {
+        max-width: 100% !important;
+    }
+}
+
+/* Accessibility improvements */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Dark mode specific adjustments */
+[data-bs-theme="dark"] .form-control[type="file"]:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+[data-bs-theme="dark"] .timeline-item:not(:last-child)::before {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Animation classes */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Status-specific colors */
+.status-orcamento { color: var(--bs-warning); }
+.status-fase-compra { color: var(--bs-info); }
+.status-a-caminho { color: var(--bs-primary); }
+.status-finalizado { color: var(--bs-success); }
+
+/* File attachment styling */
+.attachment-item {
+    background-color: var(--bs-body-secondary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    transition: background-color 0.15s ease-in-out;
+}
+
+.attachment-item:hover {
+    background-color: var(--bs-primary-bg-subtle);
+}
+
+/* Search and filter form styling */
+.search-form {
+    background-color: var(--bs-body-secondary-bg);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1.5rem;
+}
+
+/* Statistics cards */
+.stats-card {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--bs-primary-bg-subtle), var(--bs-body-bg));
+    border-radius: var(--bs-border-radius-lg);
+    border: 1px solid var(--bs-border-color);
+}
+
+.stats-card .stats-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+.stats-card .stats-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stats-card .stats-label {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+}

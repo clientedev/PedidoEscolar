@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}{{ request.title }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Request Details Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>Pedido #{{ request.id }}
+                </h5>
+                {% if current_user.is_admin or request.created_by_id == current_user.id %}
+                <a href="{{ url_for('edit_request', id=request.id) }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-edit me-1"></i>Editar
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <h4 class="card-title">{{ request.title }}</h4>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Status:</strong>
+                        {% set status_classes = {
+                            'orcamento': 'warning',
+                            'fase_compra': 'info',
+                            'a_caminho': 'primary',
+                            'finalizado': 'success'
+                        } %}
+                        <span class="badge bg-{{ status_classes.get(request.status, 'secondary') }} ms-2">
+                            {{ request.get_status_display() }}
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Criado por:</strong> {{ request.creator.full_name }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Responsável:</strong>
+                        {% if request.responsible %}
+                            {{ request.responsible.full_name }}
+                        {% else %}
+                            <span class="text-muted">Não definido</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Data de criação:</strong>
+                        {{ request.created_at.strftime('%d/%m/%Y às %H:%M') }}
+                    </div>
+                </div>
+                
+                {% if request.updated_at != request.created_at %}
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <strong>Última atualização:</strong>
+                        {{ request.updated_at.strftime('%d/%m/%Y às %H:%M') }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <strong>Descrição:</strong>
+                    <div class="mt-2 p-3 bg-body-secondary rounded">
+                        {{ request.description | replace('\n', '<br>') | safe }}
+                    </div>
+                </div>
+                
+                {% if request.observations %}
+                <div class="mb-3">
+                    <strong>Observações:</strong>
+                    <div class="mt-2 p-3 bg-body-secondary rounded">
+                        {{ request.observations | replace('\n', '<br>') | safe }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Attachments Card -->
+        {% if request.attachments.count() > 0 %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-paperclip me-2"></i>Anexos ({{ request.attachments.count() }})
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for attachment in request.attachments %}
+                    <div class="col-md-6 mb-3">
+                        <div class="border rounded p-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <i class="fas fa-file me-2"></i>
+                                        <a href="{{ url_for('uploaded_file', filename=attachment.filename) }}" 
+                                           target="_blank" class="text-decoration-none">
+                                            {{ attachment.original_filename }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">
+                                        {{ "%.1f"|format(attachment.file_size / 1024) }} KB • 
+                                        {{ attachment.upload_date.strftime('%d/%m/%Y') }} •
+                                        {{ attachment.uploaded_by.full_name }}
+                                    </small>
+                                </div>
+                                {% if current_user.is_admin or attachment.uploaded_by_id == current_user.id %}
+                                <form method="POST" action="{{ url_for('delete_attachment', id=attachment.id) }}" 
+                                      class="ms-2" onsubmit="return confirm('Tem certeza que deseja excluir este anexo?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Status History Sidebar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Histórico de Status
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if status_history %}
+                    <div class="timeline">
+                        {% for change in status_history %}
+                        <div class="timeline-item mb-3">
+                            <div class="timeline-marker">
+                                <i class="fas fa-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">
+                                    {% if change.old_status %}
+                                        {{ change.get_old_status_display() }} → {{ change.get_new_status_display() }}
+                                    {% else %}
+                                        Pedido criado ({{ change.get_new_status_display() }})
+                                    {% endif %}
+                                </h6>
+                                <small class="text-muted">
+                                    {{ change.change_date.strftime('%d/%m/%Y às %H:%M') }} por 
+                                    {{ change.changed_by_user.full_name }}
+                                </small>
+                                {% if change.comments %}
+                                <div class="mt-2">
+                                    <small class="text-muted">{{ change.comments }}</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Nenhum histórico disponível</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Voltar ao Dashboard
+    </a>
+</div>
+{% endblock %}

@@ -34,8 +34,14 @@
                             'a_caminho': 'primary',
                             'finalizado': 'success'
                         } %}
+                        {% set status_names = {
+                            'orcamento': 'Orçamento',
+                            'fase_compra': 'Fase de Compra',
+                            'a_caminho': 'A Caminho',
+                            'finalizado': 'Finalizado'
+                        } %}
                         <span class="badge bg-{{ status_classes.get(request_obj.status, 'secondary') }} ms-2">
-                            {{ request_obj.get_status_display() }}
+                            {{ status_names.get(request_obj.status, request_obj.status) }}
                         </span>
                     </div>
                     <div class="col-md-6">

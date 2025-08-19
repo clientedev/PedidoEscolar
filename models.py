@@ -10,8 +10,12 @@ class User(UserMixin, db.Model):
     full_name = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @property
+    def is_active(self):
+        return self.active
     
     # Relationships
     acquisition_requests = db.relationship('AcquisitionRequest', foreign_keys='AcquisitionRequest.created_by_id', backref='creator', lazy='dynamic')

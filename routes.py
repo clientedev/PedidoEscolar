@@ -149,14 +149,14 @@ def new_request():
         flash(flash_message, 'success')
         return redirect(url_for('view_request', id=request_obj.id))
     
-    return render_template('request_form.html', form=form, title='Novo Pedido de Aquisição')
+    return render_template('request_form.html', form=form, request_obj=None, title='Novo Pedido de Aquisição')
 
 @app.route('/request/<int:id>')
 @login_required
 def view_request(id):
     request_obj = AcquisitionRequest.query.get_or_404(id)
     status_history = StatusChange.query.filter_by(request_id=id).order_by(desc(StatusChange.change_date)).all()
-    return render_template('request_detail.html', request=request_obj, status_history=status_history)
+    return render_template('request_detail.html', request_obj=request_obj, status_history=status_history)
 
 @app.route('/request/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -217,7 +217,7 @@ def edit_request(id):
     if request_obj.responsible_id:
         form.responsible_id.data = request_obj.responsible_id
     
-    return render_template('request_form.html', form=form, request=request_obj, title='Editar Pedido')
+    return render_template('request_form.html', form=form, request_obj=request_obj, title='Editar Pedido')
 
 @app.route('/upload/<filename>')
 @login_required

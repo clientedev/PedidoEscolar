@@ -8,7 +8,7 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-{{ 'edit' if request else 'plus' }} me-2"></i>{{ title }}
+                    <i class="fas fa-{{ 'edit' if request_obj else 'plus' }} me-2"></i>{{ title }}
                 </h5>
             </div>
             <div class="card-body">
@@ -90,12 +90,12 @@
                     </div>
                     
                     <!-- Show existing attachments for edit form -->
-                    {% if request and request.attachments.count() > 0 %}
+                    {% if request_obj and request_obj.attachments.count() > 0 %}
                     <div class="row mb-4">
                         <div class="col-12">
                             <label class="form-label">Anexos Existentes</label>
                             <div class="border rounded p-3">
-                                {% for attachment in request.attachments %}
+                                {% for attachment in request_obj.attachments %}
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
                                         <i class="fas fa-file me-2"></i>
@@ -122,7 +122,7 @@
                     {% endif %}
                     
                     <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('view_request', id=request.id) if request else url_for('dashboard') }}" 
+                        <a href="{{ url_for('view_request', id=request_obj.id) if request_obj else url_for('dashboard') }}" 
                            class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-1"></i>Cancelar
                         </a>

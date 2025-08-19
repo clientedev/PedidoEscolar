@@ -53,7 +53,7 @@ The system implements a four-stage procurement workflow:
 - Secure download functionality integrated throughout the interface
 
 ## Sample Data
-- Pre-populated with demonstration users (Maria Silva, João Costa, Ana Oliveira)
+- Pre-populated with demonstration users (Ariane Santos, Edilson Costa, Edson Oliveira)
 - Example acquisition requests covering various categories (office supplies, IT equipment, cleaning materials, textbooks, sports equipment)
 - Complete status transition history showing realistic workflow progression
 - Sample data demonstrates all system features and status workflows

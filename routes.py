@@ -1,7 +1,7 @@
 import os
 import secrets
 from datetime import datetime
-from flask import render_template, redirect, url_for, flash, request, send_from_directory, abort
+from flask import render_template, redirect, url_for, flash, request, send_from_directory, abort, Response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -9,6 +9,7 @@ from sqlalchemy import or_, desc
 from app import app, db
 from models import User, AcquisitionRequest, Attachment, StatusChange
 from forms import LoginForm, AcquisitionRequestForm, EditRequestForm, UserForm, SearchForm
+from pdf_generator import generate_request_pdf, generate_general_report
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'}
@@ -350,6 +351,48 @@ def toggle_user_status(id):
     status = 'ativado' if user.is_active else 'desativado'
     flash(f'Usuário "{user.full_name}" {status} com sucesso!', 'success')
     return redirect(url_for('user_management'))
+
+@app.route('/request/<int:id>/pdf')
+@login_required
+def generate_request_pdf_route(id):
+    """Gera PDF de um pedido específico"""
+    try:
+        request_obj = AcquisitionRequest.query.get_or_404(id)
+        pdf_buffer = generate_request_pdf(request_obj)
+        
+        filename = f"Pedido_{request_obj.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        
+        return Response(
+            pdf_buffer.getvalue(),
+            mimetype='application/pdf',
+            headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+        )
+    except Exception as e:
+        app.logger.error(f"Erro ao gerar PDF do pedido {id}: {e}")
+        flash('Erro ao gerar PDF. Tente novamente.', 'danger')
+        return redirect(url_for('view_request', id=id))
+
+@app.route('/reports/general-pdf')
+@login_required
+def generate_general_pdf():
+    """Gera relatório geral em PDF"""
+    try:
+        if not current_user.is_admin:
+            flash('Acesso negado. Apenas administradores podem gerar relatórios gerais.', 'danger')
+            return redirect(url_for('dashboard'))
+        
+        pdf_buffer = generate_general_report()
+        filename = f"Relatorio_Geral_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        
+        return Response(
+            pdf_buffer.getvalue(),
+            mimetype='application/pdf',
+            headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+        )
+    except Exception as e:
+        app.logger.error(f"Erro ao gerar relatório geral: {e}")
+        flash('Erro ao gerar relatório. Tente novamente.', 'danger')
+        return redirect(url_for('dashboard'))
 
 @app.errorhandler(404)
 def not_found_error(error):

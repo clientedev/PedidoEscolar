@@ -11,11 +11,16 @@
                 <h5 class="mb-0">
                     <i class="fas fa-file-alt me-2"></i>Pedido #{{ request_obj.id }}
                 </h5>
-                {% if current_user.is_admin or request_obj.created_by_id == current_user.id %}
-                <a href="{{ url_for('edit_request', id=request_obj.id) }}" class="btn btn-sm btn-primary">
-                    <i class="fas fa-edit me-1"></i>Editar
-                </a>
-                {% endif %}
+                <div class="btn-group">
+                    {% if current_user.is_admin or request_obj.created_by_id == current_user.id %}
+                    <a href="{{ url_for('edit_request', id=request_obj.id) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-edit me-1"></i>Editar
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('generate_request_pdf_route', id=request_obj.id) }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-file-pdf me-1"></i>Gerar PDF
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <h4 class="card-title">{{ request_obj.title }}</h4>

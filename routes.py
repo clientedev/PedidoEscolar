@@ -10,6 +10,8 @@ from app import app, db
 from models import User, AcquisitionRequest, Attachment, StatusChange
 from forms import LoginForm, AcquisitionRequestForm, EditRequestForm, UserForm, SearchForm, FirstPasswordForm
 from pdf_generator import generate_request_pdf, generate_general_report
+from excel_generator import generate_requests_excel, generate_request_excel
+from flask import Response
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'}
@@ -372,10 +374,10 @@ def toggle_user_status(id):
         flash('Você não pode desativar sua própria conta.', 'warning')
         return redirect(url_for('user_management'))
     
-    user.is_active = not user.is_active
+    user.active = not user.active
     db.session.commit()
     
-    status = 'ativado' if user.is_active else 'desativado'
+    status = 'ativado' if user.active else 'desativado'
     flash(f'Usuário "{user.full_name}" {status} com sucesso!', 'success')
     return redirect(url_for('user_management'))
 
@@ -459,3 +461,39 @@ def not_found_error(error):
 def internal_error(error):
     db.session.rollback()
     return render_template('base.html', error_message='Erro interno do servidor'), 500
+
+@app.route('/export/excel/all')
+@login_required
+def export_excel_all():
+    """Export all requests to Excel"""
+    wb = generate_requests_excel()
+    
+    # Create response
+    from io import BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    response = Response(output.read(),
+                       mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response.headers['Content-Disposition'] = f'attachment; filename=pedidos_aquisicao_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    return response
+
+@app.route('/export/excel/request/<int:id>')
+@login_required
+def export_excel_request(id):
+    """Export specific request to Excel"""
+    wb = generate_request_excel(id)
+    
+    # Create response
+    from io import BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    request_obj = AcquisitionRequest.query.get_or_404(id)
+    response = Response(output.read(),
+                       mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    safe_title = ''.join(c for c in request_obj.title if c.isalnum() or c in (' ', '-', '_')).rstrip()[:30]
+    response.headers['Content-Disposition'] = f'attachment; filename=pedido_{id}_{safe_title}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    return response

@@ -10,9 +10,14 @@
             <i class="fas fa-plus me-1"></i>Novo Pedido
         </a>
         {% if current_user.is_admin %}
-        <a href="{{ url_for('generate_general_pdf') }}" class="btn btn-success">
-            <i class="fas fa-file-pdf me-1"></i>Relatório PDF
-        </a>
+        <div class="btn-group">
+            <a href="{{ url_for('generate_general_pdf') }}" class="btn btn-success">
+                <i class="fas fa-file-pdf me-1"></i>Relatório PDF
+            </a>
+            <a href="{{ url_for('export_excel_all') }}" class="btn btn-success">
+                <i class="fas fa-file-excel me-1"></i>Relatório Excel
+            </a>
+        </div>
         {% endif %}
     </div>
 </div>
@@ -143,6 +148,9 @@
                                     {% endif %}
                                     <a href="{{ url_for('generate_request_pdf_route', id=request.id) }}" class="btn btn-sm btn-outline-success" title="Gerar PDF">
                                         <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    <a href="{{ url_for('export_excel_request', id=request.id) }}" class="btn btn-sm btn-outline-success" title="Exportar Excel">
+                                        <i class="fas fa-file-excel"></i>
                                     </a>
                                     {% if current_user.is_admin %}
                                     <form method="POST" action="{{ url_for('delete_request', id=request.id) }}" 

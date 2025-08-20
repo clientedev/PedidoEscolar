@@ -32,6 +32,8 @@ class AcquisitionRequest(db.Model):
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), nullable=False, default='orcamento')
     observations = db.Column(db.Text)
+    estimated_value = db.Column(db.Numeric(10, 2))  # Valor estimado para fase de orçamento
+    final_value = db.Column(db.Numeric(10, 2))      # Valor final para fase de compra/entrega
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

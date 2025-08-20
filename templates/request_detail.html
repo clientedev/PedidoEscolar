@@ -77,6 +77,25 @@
                     </div>
                 </div>
                 
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Valor Estimado:</strong>
+                        {% if request_obj.estimated_value %}
+                            <span class="text-success fw-bold">R$ {{ "%.2f"|format(request_obj.estimated_value) }}</span>
+                        {% else %}
+                            <span class="text-muted">Não informado</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Valor Final:</strong>
+                        {% if request_obj.final_value %}
+                            <span class="text-warning fw-bold">R$ {{ "%.2f"|format(request_obj.final_value) }}</span>
+                        {% else %}
+                            <span class="text-muted">Não informado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
                 {% if request_obj.updated_at != request_obj.created_at %}
                 <div class="row mb-3">
                     <div class="col-12">

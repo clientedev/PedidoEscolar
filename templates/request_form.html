@@ -53,6 +53,29 @@
                     </div>
                     
                     <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.estimated_value.label(class="form-label") }}
+                            {{ form.estimated_value(class="form-control", step="0.01", placeholder="0.00") }}
+                            <div class="form-text">Valor estimado para a fase de orçamento</div>
+                            {% if form.estimated_value.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.estimated_value.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.final_value.label(class="form-label") }}
+                            {{ form.final_value(class="form-control", step="0.01", placeholder="0.00") }}
+                            <div class="form-text">Valor final para fase de compra/entrega</div>
+                            {% if form.final_value.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.final_value.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
                         <div class="col-12">
                             {{ form.observations.label(class="form-label") }}
                             {{ form.observations(class="form-control", rows="3") }}

@@ -1,11 +1,11 @@
 import os
 import secrets
-from datetime import datetime
+from datetime import datetime, date
 from flask import render_template, redirect, url_for, flash, request, send_from_directory, abort, Response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from sqlalchemy import or_, desc
+from sqlalchemy import or_, desc, func
 from app import app, db
 from models import User, AcquisitionRequest, Attachment, StatusChange
 from forms import LoginForm, AcquisitionRequestForm, EditRequestForm, UserForm, SearchForm, FirstPasswordForm
@@ -38,6 +38,8 @@ def dashboard():
     search = request.args.get('search', '')
     status_filter = request.args.get('status_filter', '')
     responsible_filter = request.args.get('responsible_filter', 0, type=int)
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
     
     # Build query
     query = AcquisitionRequest.query
@@ -54,6 +56,21 @@ def dashboard():
     if responsible_filter > 0:
         query = query.filter(AcquisitionRequest.responsible_id == responsible_filter)
     
+    # Date range filtering
+    if date_from:
+        try:
+            from_date = datetime.strptime(date_from, '%Y-%m-%d').date()
+            query = query.filter(func.date(AcquisitionRequest.created_at) >= from_date)
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            to_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+            query = query.filter(func.date(AcquisitionRequest.created_at) <= to_date)
+        except ValueError:
+            pass
+    
     # Order by most recent
     requests = query.order_by(desc(AcquisitionRequest.updated_at)).all()
     
@@ -68,12 +85,33 @@ def dashboard():
     search_form.search.data = search
     search_form.status_filter.data = status_filter
     search_form.responsible_filter.data = responsible_filter
+    if date_from:
+        try:
+            search_form.date_from.data = datetime.strptime(date_from, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            search_form.date_to.data = datetime.strptime(date_to, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+    
+    # Calculate totals
+    total_estimated = sum([req.estimated_value or 0 for req in requests])
+    total_final = sum([req.final_value or 0 for req in requests])
     
     return render_template('dashboard.html', 
                          requests=requests, 
                          search_form=search_form,
                          total_requests=total_requests,
-                         status_counts=status_counts)
+                         status_counts=status_counts,
+                         total_estimated=total_estimated,
+                         total_final=total_final,
+                         current_search=search,
+                         current_status_filter=status_filter,
+                         current_responsible_filter=responsible_filter,
+                         current_date_from=date_from,
+                         current_date_to=date_to)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -141,7 +179,10 @@ def new_request():
         request_obj = AcquisitionRequest()
         request_obj.title = form.title.data
         request_obj.description = form.description.data
+        request_obj.status = form.status.data
         request_obj.observations = form.observations.data
+        request_obj.estimated_value = form.estimated_value.data
+        request_obj.final_value = form.final_value.data
         request_obj.created_by_id = current_user.id
         request_obj.responsible_id = form.responsible_id.data if form.responsible_id.data > 0 else None
         db.session.add(request_obj)
@@ -150,7 +191,7 @@ def new_request():
         # Create initial status change record
         status_change = StatusChange()
         status_change.old_status = None
-        status_change.new_status = 'orcamento'
+        status_change.new_status = form.status.data
         status_change.request_id = request_obj.id
         status_change.changed_by_id = current_user.id
         status_change.comments = 'Pedido criado'
@@ -204,7 +245,12 @@ def edit_request(id):
         old_responsible = request_obj.responsible_id
         
         # Update request
-        form.populate_obj(request_obj)
+        request_obj.title = form.title.data
+        request_obj.description = form.description.data
+        request_obj.status = form.status.data
+        request_obj.observations = form.observations.data
+        request_obj.estimated_value = form.estimated_value.data
+        request_obj.final_value = form.final_value.data
         request_obj.responsible_id = form.responsible_id.data if form.responsible_id.data > 0 else None
         request_obj.updated_at = datetime.utcnow()
         
@@ -401,17 +447,51 @@ def generate_request_pdf_route(id):
         flash('Erro ao gerar PDF. Tente novamente.', 'danger')
         return redirect(url_for('view_request', id=id))
 
-@app.route('/reports/general-pdf')
+@app.route('/reports/filtered-pdf')
 @login_required
-def generate_general_pdf():
-    """Gera relatório geral em PDF"""
+def generate_filtered_pdf():
+    """Gera relatório filtrado em PDF"""
     try:
-        if not current_user.is_admin:
-            flash('Acesso negado. Apenas administradores podem gerar relatórios gerais.', 'danger')
-            return redirect(url_for('dashboard'))
+        # Get the same filter parameters as dashboard
+        search = request.args.get('search', '')
+        status_filter = request.args.get('status_filter', '')
+        responsible_filter = request.args.get('responsible_filter', 0, type=int)
+        date_from = request.args.get('date_from', '')
+        date_to = request.args.get('date_to', '')
         
-        pdf_buffer = generate_general_report()
-        filename = f"Relatorio_Geral_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        # Apply same filters as dashboard
+        query = AcquisitionRequest.query
+        
+        if search:
+            query = query.filter(or_(
+                AcquisitionRequest.title.contains(search),
+                AcquisitionRequest.description.contains(search)
+            ))
+        
+        if status_filter:
+            query = query.filter(AcquisitionRequest.status == status_filter)
+        
+        if responsible_filter > 0:
+            query = query.filter(AcquisitionRequest.responsible_id == responsible_filter)
+        
+        if date_from:
+            try:
+                from_date = datetime.strptime(date_from, '%Y-%m-%d').date()
+                query = query.filter(func.date(AcquisitionRequest.created_at) >= from_date)
+            except ValueError:
+                pass
+        
+        if date_to:
+            try:
+                to_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+                query = query.filter(func.date(AcquisitionRequest.created_at) <= to_date)
+            except ValueError:
+                pass
+        
+        filtered_requests = query.order_by(desc(AcquisitionRequest.updated_at)).all()
+        pdf_buffer = generate_general_report(filtered_requests)
+        
+        filename = f"Relatorio_Filtrado_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         
         return Response(
             pdf_buffer.getvalue(),
@@ -419,7 +499,7 @@ def generate_general_pdf():
             headers={'Content-Disposition': f'attachment; filename="{filename}"'}
         )
     except Exception as e:
-        app.logger.error(f"Erro ao gerar relatório geral: {e}")
+        app.logger.error(f"Erro ao gerar relatório filtrado: {e}")
         flash('Erro ao gerar relatório. Tente novamente.', 'danger')
         return redirect(url_for('dashboard'))
 
@@ -462,11 +542,48 @@ def internal_error(error):
     db.session.rollback()
     return render_template('base.html', error_message='Erro interno do servidor'), 500
 
-@app.route('/export/excel/all')
+@app.route('/export/excel/filtered')
 @login_required
-def export_excel_all():
-    """Export all requests to Excel"""
-    wb = generate_requests_excel()
+def export_excel_filtered():
+    """Export filtered requests to Excel"""
+    # Get the same filter parameters as dashboard
+    search = request.args.get('search', '')
+    status_filter = request.args.get('status_filter', '')
+    responsible_filter = request.args.get('responsible_filter', 0, type=int)
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
+    
+    # Apply same filters as dashboard
+    query = AcquisitionRequest.query
+    
+    if search:
+        query = query.filter(or_(
+            AcquisitionRequest.title.contains(search),
+            AcquisitionRequest.description.contains(search)
+        ))
+    
+    if status_filter:
+        query = query.filter(AcquisitionRequest.status == status_filter)
+    
+    if responsible_filter > 0:
+        query = query.filter(AcquisitionRequest.responsible_id == responsible_filter)
+    
+    if date_from:
+        try:
+            from_date = datetime.strptime(date_from, '%Y-%m-%d').date()
+            query = query.filter(func.date(AcquisitionRequest.created_at) >= from_date)
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            to_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+            query = query.filter(func.date(AcquisitionRequest.created_at) <= to_date)
+        except ValueError:
+            pass
+    
+    filtered_requests = query.order_by(desc(AcquisitionRequest.updated_at)).all()
+    wb = generate_requests_excel(filtered_requests)
     
     # Create response
     from io import BytesIO
@@ -476,7 +593,7 @@ def export_excel_all():
     
     response = Response(output.read(),
                        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response.headers['Content-Disposition'] = f'attachment; filename=pedidos_aquisicao_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    response.headers['Content-Disposition'] = f'attachment; filename=pedidos_filtrados_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
     return response
 
 @app.route('/export/excel/request/<int:id>')

@@ -26,7 +26,7 @@ def generate_requests_excel(requests=None):
     # Headers
     headers = [
         "ID", "Descrição do Item", "Responsável pela Cotação", 
-        "Status de Andamento", "Observação", "Data de Criação", 
+        "Status de Andamento", "Valor Estimado", "Valor Final", "Observação", "Data de Criação", 
         "Última Atualização", "Criado por", "Anexos"
     ]
     
@@ -67,6 +67,8 @@ def generate_requests_excel(requests=None):
             request.title,
             responsible_name,
             status_display,
+            f"R$ {request.estimated_value:.2f}" if request.estimated_value else "Não informado",
+            f"R$ {request.final_value:.2f}" if request.final_value else "Não informado",
             request.observations or "",
             request.created_at.strftime("%d/%m/%Y %H:%M") if request.created_at else "",
             request.updated_at.strftime("%d/%m/%Y %H:%M") if request.updated_at else "",
@@ -153,22 +155,28 @@ def generate_request_excel(request_id):
     ws.cell(row=10, column=1, value="Data de Criação:").font = Font(bold=True)
     ws.cell(row=10, column=2, value=request.created_at.strftime("%d/%m/%Y %H:%M") if request.created_at else "")
     
-    ws.cell(row=11, column=1, value="Observações:").font = Font(bold=True)
-    ws.cell(row=11, column=2, value=request.observations or "Nenhuma observação")
-    ws.cell(row=11, column=2).alignment = Alignment(wrap_text=True)
+    ws.cell(row=11, column=1, value="Valor Estimado:").font = Font(bold=True)
+    ws.cell(row=11, column=2, value=f"R$ {request.estimated_value:.2f}" if request.estimated_value else "Não informado")
+    
+    ws.cell(row=12, column=1, value="Valor Final:").font = Font(bold=True)
+    ws.cell(row=12, column=2, value=f"R$ {request.final_value:.2f}" if request.final_value else "Não informado")
+    
+    ws.cell(row=13, column=1, value="Observações:").font = Font(bold=True)
+    ws.cell(row=13, column=2, value=request.observations or "Nenhuma observação")
+    ws.cell(row=13, column=2).alignment = Alignment(wrap_text=True)
     
     # Status history
     status_history = StatusChange.query.filter_by(request_id=request.id).order_by(StatusChange.change_date.desc()).all()
     if status_history:
-        ws.cell(row=13, column=1, value="Histórico de Status:").font = Font(bold=True)
+        ws.cell(row=15, column=1, value="Histórico de Status:").font = Font(bold=True)
         
         # Headers for status history
         headers = ["Data", "Status Anterior", "Novo Status", "Alterado por", "Comentários"]
         for col, header in enumerate(headers, 1):
-            cell = ws.cell(row=14, column=col, value=header)
+            cell = ws.cell(row=16, column=col, value=header)
             cell.font = Font(bold=True)
         
-        for row_num, change in enumerate(status_history, 15):
+        for row_num, change in enumerate(status_history, 17):
             ws.cell(row=row_num, column=1, value=change.change_date.strftime("%d/%m/%Y %H:%M"))
             ws.cell(row=row_num, column=2, value=change.old_status or "Início")
             ws.cell(row=row_num, column=3, value=change.new_status)
@@ -178,7 +186,7 @@ def generate_request_excel(request_id):
     # Attachments
     attachments = request.attachments.all()
     if attachments:
-        current_row = len(status_history) + 17 if status_history else 15
+        current_row = len(status_history) + 19 if status_history else 17
         ws.cell(row=current_row, column=1, value="Anexos:").font = Font(bold=True)
         
         for i, attachment in enumerate(attachments, current_row + 1):

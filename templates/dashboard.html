@@ -11,10 +11,10 @@
         </a>
         {% if current_user.is_admin %}
         <div class="btn-group">
-            <a href="{{ url_for('generate_general_pdf') }}" class="btn btn-success">
+            <a href="{{ url_for('generate_filtered_pdf', search=current_search, status_filter=current_status_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
                 <i class="fas fa-file-pdf me-1"></i>Relatório PDF
             </a>
-            <a href="{{ url_for('export_excel_all') }}" class="btn btn-success">
+            <a href="{{ url_for('export_excel_filtered', search=current_search, status_filter=current_status_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
                 <i class="fas fa-file-excel me-1"></i>Relatório Excel
             </a>
         </div>
@@ -30,6 +30,24 @@
                 <i class="fas fa-list fa-2x text-primary mb-2"></i>
                 <h5 class="card-title">Total de Pedidos</h5>
                 <h3 class="text-primary">{{ total_requests }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                <h6 class="card-title">Valor Estimado Total</h6>
+                <h4 class="text-success">R$ {{ "%.2f"|format(total_estimated) }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-dollar-sign fa-2x text-warning mb-2"></i>
+                <h6 class="card-title">Valor Final Total</h6>
+                <h4 class="text-warning">R$ {{ "%.2f"|format(total_final) }}</h4>
             </div>
         </div>
     </div>
@@ -58,9 +76,17 @@
                 {{ search_form.status_filter.label(class="form-label") }}
                 {{ search_form.status_filter(class="form-select") }}
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 {{ search_form.responsible_filter.label(class="form-label") }}
                 {{ search_form.responsible_filter(class="form-select") }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.date_from.label(class="form-label") }}
+                {{ search_form.date_from(class="form-control") }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.date_to.label(class="form-label") }}
+                {{ search_form.date_to(class="form-control") }}
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <button type="submit" class="btn btn-secondary me-2">
@@ -88,6 +114,8 @@
                             <th>ID</th>
                             <th>Título</th>
                             <th>Status</th>
+                            <th>Valor Estimado</th>
+                            <th>Valor Final</th>
                             <th>Responsável</th>
                             <th>Criado por</th>
                             <th>Data</th>
@@ -122,6 +150,20 @@
                                 <span class="badge bg-{{ status_classes.get(request.status, 'secondary') }} text-white">
                                     {{ status_names.get(request.status, request.status) }}
                                 </span>
+                            </td>
+                            <td>
+                                {% if request.estimated_value %}
+                                    <span class="text-success fw-bold">R$ {{ "%.2f"|format(request.estimated_value) }}</span>
+                                {% else %}
+                                    <span class="text-muted">Não informado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if request.final_value %}
+                                    <span class="text-warning fw-bold">R$ {{ "%.2f"|format(request.final_value) }}</span>
+                                {% else %}
+                                    <span class="text-muted">Não informado</span>
+                                {% endif %}
                             </td>
                             <td>
                                 {% if request.responsible %}

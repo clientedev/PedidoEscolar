@@ -46,13 +46,15 @@ def generate_request_pdf(request_obj):
     info_data = [
         ['Título:', request_obj.title],
         ['Status:', request_obj.get_status_display()],
+        ['Valor Estimado:', f'R$ {request_obj.estimated_value:.2f}' if request_obj.estimated_value else 'Não informado'],
+        ['Valor Final:', f'R$ {request_obj.final_value:.2f}' if request_obj.final_value else 'Não informado'],
         ['Criado por:', request_obj.creator.full_name],
         ['Responsável:', request_obj.responsible.full_name if request_obj.responsible else 'Não definido'],
         ['Data de criação:', request_obj.created_at.strftime('%d/%m/%Y às %H:%M')],
         ['Última atualização:', request_obj.updated_at.strftime('%d/%m/%Y às %H:%M')]
     ]
     
-    info_table = Table(info_data, colWidths=[2*inch, 4*inch])
+    info_table = Table(info_data, colWidths=[2.2*inch, 3.8*inch])
     info_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
         ('TEXTCOLOR', (0, 0), (0, -1), colors.black),
@@ -158,8 +160,8 @@ def generate_request_pdf(request_obj):
     buffer.seek(0)
     return buffer
 
-def generate_general_report():
-    """Gera relatório geral do sistema"""
+def generate_general_report(requests=None):
+    """Gera relatório geral do sistema ou relatório filtrado"""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     story = []
@@ -188,8 +190,12 @@ def generate_general_report():
     story.append(Paragraph("Relatório Geral de Aquisições", styles['Normal']))
     story.append(Spacer(1, 20))
     
+    # Obter dados dos pedidos
+    if requests is None:
+        requests = AcquisitionRequest.query.all()
+    
     # Estatísticas gerais
-    total_requests = AcquisitionRequest.query.count()
+    total_requests = len(requests)
     total_users = User.query.filter_by(is_active=True).count()
     
     stats_data = [
@@ -217,7 +223,7 @@ def generate_general_report():
     story.append(Paragraph("Distribuição por Status", section_style))
     status_counts = {}
     for status_code, status_name in AcquisitionRequest.STATUS_CHOICES:
-        count = AcquisitionRequest.query.filter_by(status=status_code).count()
+        count = sum(1 for req in requests if req.status == status_code)
         status_counts[status_name] = count
     
     status_data = [['Status', 'Quantidade', 'Percentual']]
@@ -239,9 +245,9 @@ def generate_general_report():
     story.append(status_table)
     story.append(Spacer(1, 20))
     
-    # Lista de todos os pedidos
-    story.append(Paragraph("Lista Completa de Pedidos", section_style))
-    requests = AcquisitionRequest.query.order_by(AcquisitionRequest.id.desc()).all()
+    # Lista dos pedidos (filtrados se aplicável)
+    report_title = "Lista de Pedidos Filtrados" if len(requests) < AcquisitionRequest.query.count() else "Lista Completa de Pedidos"
+    story.append(Paragraph(report_title, section_style))
     
     if requests:
         request_data = [['ID', 'Título', 'Status', 'Criado por', 'Responsável', 'Data']]

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, MultipleFileField
-from wtforms import StringField, TextAreaField, SelectField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Length, Email, ValidationError, Optional
+from wtforms import StringField, TextAreaField, SelectField, PasswordField, BooleanField, SubmitField, DecimalField, DateField
+from wtforms.validators import DataRequired, Length, Email, ValidationError, Optional, NumberRange
 from models import User, AcquisitionRequest
 
 class LoginForm(FlaskForm):
@@ -13,7 +13,10 @@ class LoginForm(FlaskForm):
 class AcquisitionRequestForm(FlaskForm):
     title = StringField('Título', validators=[DataRequired(), Length(min=5, max=200)])
     description = TextAreaField('Descrição', validators=[DataRequired(), Length(min=10, max=1000)])
+    status = SelectField('Status', validators=[DataRequired()])
     observations = TextAreaField('Observações', validators=[Optional(), Length(max=500)])
+    estimated_value = DecimalField('Valor Estimado (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
+    final_value = DecimalField('Valor Final (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     responsible_id = SelectField('Responsável pela Cotação', coerce=int, validators=[Optional()])
     attachments = MultipleFileField('Anexar Orçamentos', validators=[
         FileAllowed(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'], 
@@ -23,6 +26,8 @@ class AcquisitionRequestForm(FlaskForm):
     
     def __init__(self, *args, **kwargs):
         super(AcquisitionRequestForm, self).__init__(*args, **kwargs)
+        # Populate status choices
+        self.status.choices = AcquisitionRequest.STATUS_CHOICES
         # Populate responsible choices with active users
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
@@ -33,6 +38,8 @@ class EditRequestForm(FlaskForm):
     description = TextAreaField('Descrição', validators=[DataRequired(), Length(min=10, max=1000)])
     status = SelectField('Status', validators=[DataRequired()])
     observations = TextAreaField('Observações', validators=[Optional(), Length(max=500)])
+    estimated_value = DecimalField('Valor Estimado (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
+    final_value = DecimalField('Valor Final (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     responsible_id = SelectField('Responsável pela Cotação', coerce=int, validators=[Optional()])
     attachments = MultipleFileField('Anexar Novos Orçamentos', validators=[
         FileAllowed(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'], 
@@ -86,6 +93,8 @@ class SearchForm(FlaskForm):
     search = StringField('Buscar', validators=[Optional(), Length(max=100)])
     status_filter = SelectField('Filtrar por Status', validators=[Optional()])
     responsible_filter = SelectField('Filtrar por Responsável', coerce=int, validators=[Optional()])
+    date_from = DateField('Data Inicial', validators=[Optional()])
+    date_to = DateField('Data Final', validators=[Optional()])
     submit = SubmitField('Filtrar')
     
     def __init__(self, *args, **kwargs):

@@ -61,14 +61,14 @@ def dashboard():
     if date_from:
         try:
             from_date = datetime.strptime(date_from, '%Y-%m-%d').date()
-            query = query.filter(func.date(AcquisitionRequest.created_at) >= from_date)
+            query = query.filter(AcquisitionRequest.request_date >= from_date)
         except ValueError:
             pass
     
     if date_to:
         try:
             to_date = datetime.strptime(date_to, '%Y-%m-%d').date()
-            query = query.filter(func.date(AcquisitionRequest.created_at) <= to_date)
+            query = query.filter(AcquisitionRequest.request_date <= to_date)
         except ValueError:
             pass
     
@@ -482,14 +482,14 @@ def generate_filtered_pdf():
         if date_from:
             try:
                 from_date = datetime.strptime(date_from, '%Y-%m-%d').date()
-                query = query.filter(func.date(AcquisitionRequest.created_at) >= from_date)
+                query = query.filter(AcquisitionRequest.request_date >= from_date)
             except ValueError:
                 pass
         
         if date_to:
             try:
                 to_date = datetime.strptime(date_to, '%Y-%m-%d').date()
-                query = query.filter(func.date(AcquisitionRequest.created_at) <= to_date)
+                query = query.filter(AcquisitionRequest.request_date <= to_date)
             except ValueError:
                 pass
         
@@ -576,14 +576,14 @@ def export_excel_filtered():
     if date_from:
         try:
             from_date = datetime.strptime(date_from, '%Y-%m-%d').date()
-            query = query.filter(func.date(AcquisitionRequest.created_at) >= from_date)
+            query = query.filter(AcquisitionRequest.request_date >= from_date)
         except ValueError:
             pass
     
     if date_to:
         try:
             to_date = datetime.strptime(date_to, '%Y-%m-%d').date()
-            query = query.filter(func.date(AcquisitionRequest.created_at) <= to_date)
+            query = query.filter(AcquisitionRequest.request_date <= to_date)
         except ValueError:
             pass
     

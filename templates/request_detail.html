@@ -72,8 +72,8 @@
                         {% endif %}
                     </div>
                     <div class="col-md-6">
-                        <strong>Data de criação:</strong>
-                        {{ request_obj.created_at.strftime('%d/%m/%Y às %H:%M') }}
+                        <strong>Data da Solicitação:</strong>
+                        {{ request_obj.request_date.strftime('%d/%m/%Y') }}
                     </div>
                 </div>
                 
@@ -96,14 +96,18 @@
                     </div>
                 </div>
                 
-                {% if request_obj.updated_at != request_obj.created_at %}
                 <div class="row mb-3">
-                    <div class="col-12">
+                    <div class="col-md-6">
+                        <strong>Criado no sistema:</strong>
+                        {{ request_obj.created_at.strftime('%d/%m/%Y às %H:%M') }}
+                    </div>
+                    {% if request_obj.updated_at != request_obj.created_at %}
+                    <div class="col-md-6">
                         <strong>Última atualização:</strong>
                         {{ request_obj.updated_at.strftime('%d/%m/%Y às %H:%M') }}
                     </div>
+                    {% endif %}
                 </div>
-                {% endif %}
                 
                 <div class="mb-3">
                     <strong>Descrição:</strong>

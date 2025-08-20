@@ -18,6 +18,7 @@ class AcquisitionRequestForm(FlaskForm):
     estimated_value = DecimalField('Valor Estimado (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     final_value = DecimalField('Valor Final (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     responsible_id = SelectField('Responsável pela Cotação', coerce=int, validators=[Optional()])
+    request_date = DateField('Data da Solicitação', validators=[DataRequired()])
     attachments = MultipleFileField('Anexar Orçamentos', validators=[
         FileAllowed(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'], 
                    'Apenas arquivos PDF, Word, Excel e imagens são permitidos.')
@@ -32,6 +33,10 @@ class AcquisitionRequestForm(FlaskForm):
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
         ]
+        # Set default date to today if not already set
+        if not self.request_date.data:
+            from datetime import date
+            self.request_date.data = date.today()
 
 class EditRequestForm(FlaskForm):
     title = StringField('Título', validators=[DataRequired(), Length(min=5, max=200)])
@@ -41,6 +46,7 @@ class EditRequestForm(FlaskForm):
     estimated_value = DecimalField('Valor Estimado (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     final_value = DecimalField('Valor Final (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     responsible_id = SelectField('Responsável pela Cotação', coerce=int, validators=[Optional()])
+    request_date = DateField('Data da Solicitação', validators=[DataRequired()])
     attachments = MultipleFileField('Anexar Novos Orçamentos', validators=[
         FileAllowed(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'], 
                    'Apenas arquivos PDF, Word, Excel e imagens são permitidos.')

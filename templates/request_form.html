@@ -76,6 +76,19 @@
                     </div>
                     
                     <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.request_date.label(class="form-label") }}
+                            {{ form.request_date(class="form-control" + (" is-invalid" if form.request_date.errors else "")) }}
+                            <div class="form-text">Data da solicitação do pedido</div>
+                            {% if form.request_date.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.request_date.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
                         <div class="col-12">
                             {{ form.observations.label(class="form-label") }}
                             {{ form.observations(class="form-control", rows="3") }}

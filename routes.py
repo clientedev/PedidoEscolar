@@ -184,6 +184,7 @@ def new_request():
         request_obj.observations = form.observations.data
         request_obj.estimated_value = form.estimated_value.data
         request_obj.final_value = form.final_value.data
+        request_obj.request_date = form.request_date.data
         request_obj.created_by_id = current_user.id
         request_obj.responsible_id = form.responsible_id.data if form.responsible_id.data > 0 else None
         db.session.add(request_obj)
@@ -253,6 +254,7 @@ def edit_request(id):
         request_obj.observations = form.observations.data
         request_obj.estimated_value = form.estimated_value.data
         request_obj.final_value = form.final_value.data
+        request_obj.request_date = form.request_date.data
         request_obj.responsible_id = form.responsible_id.data if form.responsible_id.data > 0 else None
         request_obj.updated_at = datetime.utcnow()
         
@@ -680,6 +682,7 @@ def process_bulk_import():
                     request_obj.final_value = pedido_data['valor_final']
                     request_obj.responsible_id = pedido_data['responsible_id']
                     request_obj.observations = pedido_data['observacoes']
+                    request_obj.request_date = pedido_data['data_solicitacao']
                     request_obj.created_by_id = current_user.id
                     db.session.add(request_obj)
                     db.session.flush()  # Get the ID

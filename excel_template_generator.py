@@ -19,8 +19,8 @@ def generate_import_template():
     
     # Headers
     headers = [
-        "Título*", "Descrição*", "Status*", "Valor Estimado", 
-        "Valor Final", "Responsável (Nome)", "Observações"
+        "Título*", "Descrição*", "Status*", "Data da Solicitação*",
+        "Valor Estimado", "Valor Final", "Responsável (Nome)", "Observações"
     ]
     
     for col, header in enumerate(headers, 1):
@@ -44,18 +44,20 @@ def generate_import_template():
             "Compra de Material de Escritório",
             "Aquisição de canetas, papéis e materiais básicos para o escritório administrativo",
             "orcamento",
+            "2025-08-20",
             "150.00",
             "",
-            "João Silva",
+            "Edson Lemes",
             "Urgente para início do semestre"
         ],
         [
             "Equipamento de Informática",
             "Computadores para laboratório de informática - 10 unidades",
             "fase_compra",
+            "2025-08-15",
             "25000.00",
             "24500.00",
-            "Maria Santos",
+            "Edson Lemes",
             ""
         ]
     ]
@@ -78,6 +80,7 @@ def generate_import_template():
         ["   • Título: Nome do pedido (mínimo 5 caracteres)", ""],
         ["   • Descrição: Descrição detalhada (mínimo 10 caracteres)", ""],
         ["   • Status: Deve ser um dos valores abaixo:", ""],
+        ["   • Data da Solicitação: Formato AAAA-MM-DD (ex: 2025-08-20)", ""],
         ["     - orcamento (Orçamento)", ""],
         ["     - fase_compra (Fase de Compra)", ""],
         ["     - a_caminho (A Caminho)", ""],
@@ -92,6 +95,7 @@ def generate_import_template():
         ["3. Observações importantes:", ""],
         ["   • Remova as linhas de exemplo antes de importar", ""],
         ["   • Valores monetários devem usar ponto como separador decimal", ""],
+        ["   • Datas devem estar no formato AAAA-MM-DD", ""],
         ["   • Se o responsável não for encontrado, o campo ficará vazio", ""],
         ["   • Máximo de 100 pedidos por importação", ""],
         ["", ""],
@@ -133,7 +137,7 @@ def process_import_file(file_path, current_user):
             if not any(row):  # Skip empty rows
                 continue
                 
-            titulo, descricao, status, valor_estimado, valor_final, responsavel_nome, observacoes = row[:7]
+            titulo, descricao, status, data_solicitacao, valor_estimado, valor_final, responsavel_nome, observacoes = row[:8]
             
             # Validate required fields
             if not titulo or len(str(titulo).strip()) < 5:
@@ -146,6 +150,21 @@ def process_import_file(file_path, current_user):
                 
             if not status or status not in [s[0] for s in AcquisitionRequest.STATUS_CHOICES]:
                 erros.append(f"Linha {row_idx}: Status inválido. Use: {', '.join([s[0] for s in AcquisitionRequest.STATUS_CHOICES])}")
+                continue
+                
+            # Validate and parse date
+            try:
+                if data_solicitacao:
+                    from datetime import datetime
+                    if isinstance(data_solicitacao, str):
+                        data_parsed = datetime.strptime(data_solicitacao, '%Y-%m-%d').date()
+                    else:
+                        data_parsed = data_solicitacao
+                else:
+                    erros.append(f"Linha {row_idx}: Data da solicitação é obrigatória")
+                    continue
+            except (ValueError, TypeError):
+                erros.append(f"Linha {row_idx}: Data inválida '{data_solicitacao}'. Use formato AAAA-MM-DD")
                 continue
             
             # Find responsible user
@@ -176,6 +195,7 @@ def process_import_file(file_path, current_user):
                 'titulo': str(titulo).strip(),
                 'descricao': str(descricao).strip(),
                 'status': status,
+                'data_solicitacao': data_parsed,
                 'valor_estimado': valor_estimado_parsed,
                 'valor_final': valor_final_parsed,
                 'responsible_id': responsible_id,

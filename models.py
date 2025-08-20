@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from app import db
 from flask_login import UserMixin
 from sqlalchemy import func
@@ -34,6 +34,7 @@ class AcquisitionRequest(db.Model):
     observations = db.Column(db.Text)
     estimated_value = db.Column(db.Numeric(10, 2))  # Valor estimado para fase de orçamento
     final_value = db.Column(db.Numeric(10, 2))      # Valor final para fase de compra/entrega
+    request_date = db.Column(db.Date, nullable=False, default=date.today)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

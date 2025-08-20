@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Importação em Lote - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-upload me-2"></i>Importação em Lote de Pedidos</h1>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Voltar ao Dashboard
+            </a>
+        </div>
+
+        <!-- Instructions Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Como Funciona</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-download me-2 text-primary"></i>1. Baixe o Modelo</h6>
+                        <p class="text-muted mb-3">Faça o download do arquivo Excel modelo com as colunas corretas e instruções detalhadas.</p>
+                        
+                        <h6><i class="fas fa-edit me-2 text-warning"></i>2. Preencha os Dados</h6>
+                        <p class="text-muted mb-3">Complete o arquivo com os dados dos pedidos que deseja importar. Remova as linhas de exemplo.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-upload me-2 text-success"></i>3. Envie o Arquivo</h6>
+                        <p class="text-muted mb-3">Faça o upload do arquivo preenchido para criar todos os pedidos de uma só vez.</p>
+                        
+                        <h6><i class="fas fa-check me-2 text-info"></i>4. Verifique os Resultados</h6>
+                        <p class="text-muted mb-3">Revise os pedidos criados e eventuais avisos ou erros reportados.</p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Dica:</strong> Você pode importar até 100 pedidos por vez. Campos marcados com * são obrigatórios.
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Template -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-download me-2"></i>1. Baixar Modelo Excel</h5>
+            </div>
+            <div class="card-body text-center">
+                <p class="text-muted">Baixe o arquivo modelo para preencher com os dados dos pedidos.</p>
+                <a href="{{ url_for('download_import_template') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-file-excel me-2"></i>Baixar Modelo Excel
+                </a>
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-upload me-2"></i>2. Enviar Arquivo Preenchido</h5>
+            </div>
+            <div class="card-body">
+                {% if success_count %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Sucesso!</strong> {{ success_count }} pedido(s) importado(s) com sucesso!
+                </div>
+                {% endif %}
+
+                {% if errors %}
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Avisos e Erros Durante a Importação:</h6>
+                    <ul class="mb-0">
+                        {% for error in errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-4">
+                        {{ form.excel_file.label(class="form-label") }}
+                        {{ form.excel_file(class="form-control" + (" is-invalid" if form.excel_file.errors else "")) }}
+                        <div class="form-text">
+                            Selecione o arquivo Excel (.xlsx ou .xls) preenchido com os dados dos pedidos.
+                        </div>
+                        {% if form.excel_file.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.excel_file.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Cancelar
+                        </a>
+                        {{ form.submit(class="btn btn-success") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Ajuda</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Campos Obrigatórios:</h6>
+                        <ul>
+                            <li><strong>Título:</strong> Mínimo 5 caracteres</li>
+                            <li><strong>Descrição:</strong> Mínimo 10 caracteres</li>
+                            <li><strong>Status:</strong> orcamento, fase_compra, a_caminho, ou finalizado</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Campos Opcionais:</h6>
+                        <ul>
+                            <li><strong>Valor Estimado/Final:</strong> Números com ponto decimal (ex: 123.45)</li>
+                            <li><strong>Responsável:</strong> Nome completo do usuário existente</li>
+                            <li><strong>Observações:</strong> Comentários adicionais</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-scroll to errors if they exist
+    const errorAlert = document.querySelector('.alert-warning');
+    if (errorAlert) {
+        errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // File input change event
+    const fileInput = document.getElementById('excel_file');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const fileName = file.name;
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                console.log(`Arquivo selecionado: ${fileName} (${fileSize} MB)`);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

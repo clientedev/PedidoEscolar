@@ -103,3 +103,10 @@ class SearchForm(FlaskForm):
         self.responsible_filter.choices = [(0, 'Todos os responsáveis')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
         ]
+
+class BulkImportForm(FlaskForm):
+    excel_file = FileField('Arquivo Excel', validators=[
+        DataRequired('Por favor, selecione um arquivo Excel.'),
+        FileAllowed(['xlsx', 'xls'], 'Apenas arquivos Excel (.xlsx, .xls) são permitidos.')
+    ])
+    submit = SubmitField('Importar Pedidos')

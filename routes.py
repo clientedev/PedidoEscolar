@@ -8,9 +8,10 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import or_, desc, func
 from app import app, db
 from models import User, AcquisitionRequest, Attachment, StatusChange
-from forms import LoginForm, AcquisitionRequestForm, EditRequestForm, UserForm, SearchForm, FirstPasswordForm
+from forms import LoginForm, AcquisitionRequestForm, EditRequestForm, UserForm, SearchForm, FirstPasswordForm, BulkImportForm
 from pdf_generator import generate_request_pdf, generate_general_report
 from excel_generator import generate_requests_excel, generate_request_excel
+from excel_template_generator import generate_import_template, process_import_file
 from flask import Response
 
 def allowed_file(filename):
@@ -199,7 +200,8 @@ def new_request():
         
         # Handle file uploads
         uploaded_files = []
-        for file in form.attachments.data:
+        attachment_data = form.attachments.data or []
+        for file in attachment_data:
             if file and file.filename:
                 unique_filename, original_filename, file_size = save_file(file)
                 if unique_filename:
@@ -266,7 +268,8 @@ def edit_request(id):
         
         # Handle new file uploads
         uploaded_files = []
-        for file in form.attachments.data:
+        attachment_data = form.attachments.data or []
+        for file in attachment_data:
             if file and file.filename:
                 unique_filename, original_filename, file_size = save_file(file)
                 if unique_filename:
@@ -614,3 +617,104 @@ def export_excel_request(id):
     safe_title = ''.join(c for c in request_obj.title if c.isalnum() or c in (' ', '-', '_')).rstrip()[:30]
     response.headers['Content-Disposition'] = f'attachment; filename=pedido_{id}_{safe_title}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
     return response
+
+@app.route('/bulk-import')
+@login_required
+def bulk_import_page():
+    """Página para importação em lote"""
+    form = BulkImportForm()
+    return render_template('bulk_import.html', form=form)
+
+@app.route('/bulk-import/template')
+@login_required
+def download_import_template():
+    """Download do modelo Excel para importação"""
+    wb = generate_import_template()
+    
+    # Create response
+    from io import BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    response = Response(output.read(),
+                       mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response.headers['Content-Disposition'] = f'attachment; filename=modelo_importacao_pedidos_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    return response
+
+@app.route('/bulk-import', methods=['POST'])
+@login_required
+def process_bulk_import():
+    """Processa a importação em lote de pedidos"""
+    form = BulkImportForm()
+    
+    if form.validate_on_submit():
+        try:
+            # Save uploaded file temporarily
+            file = form.excel_file.data
+            filename = secure_filename(file.filename)
+            temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"temp_{secrets.token_hex(8)}_{filename}")
+            file.save(temp_path)
+            
+            # Process the file
+            pedidos, erros = process_import_file(temp_path, current_user)
+            
+            # Clean up temp file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            
+            if not pedidos:
+                flash('Nenhum pedido válido encontrado no arquivo.', 'warning')
+                return render_template('bulk_import.html', form=form, errors=erros)
+            
+            # Create requests in database
+            created_count = 0
+            for pedido_data in pedidos:
+                try:
+                    # Create new request
+                    request_obj = AcquisitionRequest()
+                    request_obj.title = pedido_data['titulo']
+                    request_obj.description = pedido_data['descricao']
+                    request_obj.status = pedido_data['status']
+                    request_obj.estimated_value = pedido_data['valor_estimado']
+                    request_obj.final_value = pedido_data['valor_final']
+                    request_obj.responsible_id = pedido_data['responsible_id']
+                    request_obj.observations = pedido_data['observacoes']
+                    request_obj.created_by_id = current_user.id
+                    db.session.add(request_obj)
+                    db.session.flush()  # Get the ID
+                    
+                    # Create initial status change record
+                    status_change = StatusChange()
+                    status_change.old_status = None
+                    status_change.new_status = pedido_data['status']
+                    status_change.request_id = request_obj.id
+                    status_change.changed_by_id = current_user.id
+                    status_change.comments = 'Pedido criado via importação em lote'
+                    db.session.add(status_change)
+                    
+                    created_count += 1
+                    
+                except Exception as e:
+                    erros.append(f"Linha {pedido_data['linha']}: Erro ao criar pedido - {str(e)}")
+                    db.session.rollback()
+                    continue
+            
+            if created_count > 0:
+                db.session.commit()
+                flash(f'{created_count} pedido(s) importado(s) com sucesso!', 'success')
+                
+                if erros:
+                    flash(f'Avisos durante a importação: {len(erros)} problema(s) encontrado(s).', 'warning')
+                    return render_template('bulk_import.html', form=BulkImportForm(), errors=erros, success_count=created_count)
+                
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Nenhum pedido foi criado devido a erros.', 'danger')
+                return render_template('bulk_import.html', form=form, errors=erros)
+                
+        except Exception as e:
+            flash(f'Erro ao processar arquivo: {str(e)}', 'danger')
+            return render_template('bulk_import.html', form=form)
+    
+    return render_template('bulk_import.html', form=form)

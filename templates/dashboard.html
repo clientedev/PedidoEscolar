@@ -9,6 +9,9 @@
         <a href="{{ url_for('new_request') }}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>Novo Pedido
         </a>
+        <a href="{{ url_for('bulk_import_page') }}" class="btn btn-info">
+            <i class="fas fa-upload me-1"></i>Importar em Lote
+        </a>
         {% if current_user.is_admin %}
         <div class="btn-group">
             <a href="{{ url_for('generate_filtered_pdf', search=current_search, status_filter=current_status_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">

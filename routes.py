@@ -194,7 +194,14 @@ def new_request():
         request_obj.description = form.description.data
         request_obj.status = form.status.data
         request_obj.classe = form.classe.data
-        request_obj.categoria = form.categoria.data
+        
+        # Process categoria checkboxes
+        categorias = []
+        if form.categoria_material.data:
+            categorias.append('material')
+        if form.categoria_servico.data:
+            categorias.append('servico')
+        request_obj.categoria = ','.join(categorias) if categorias else 'material'
         request_obj.observations = form.observations.data
         request_obj.estimated_value = form.estimated_value.data
         request_obj.final_value = form.final_value.data
@@ -266,7 +273,14 @@ def edit_request(id):
         request_obj.description = form.description.data
         request_obj.status = form.status.data
         request_obj.classe = form.classe.data
-        request_obj.categoria = form.categoria.data
+        
+        # Process categoria checkboxes
+        categorias = []
+        if form.categoria_material.data:
+            categorias.append('material')
+        if form.categoria_servico.data:
+            categorias.append('servico')
+        request_obj.categoria = ','.join(categorias) if categorias else 'material'
         request_obj.observations = form.observations.data
         request_obj.estimated_value = form.estimated_value.data
         request_obj.final_value = form.final_value.data
@@ -311,6 +325,12 @@ def edit_request(id):
     # Pre-populate form
     if request_obj.responsible_id:
         form.responsible_id.data = request_obj.responsible_id
+        
+    # Pre-populate categoria checkboxes
+    if request_obj.categoria:
+        categorias = request_obj.categoria.split(',')
+        form.categoria_material.data = 'material' in categorias
+        form.categoria_servico.data = 'servico' in categorias
     
     return render_template('request_form.html', form=form, request_obj=request_obj, title='Editar Pedido')
 

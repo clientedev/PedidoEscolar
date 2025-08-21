@@ -56,11 +56,19 @@
                             {% endif %}
                         </div>
                         <div class="col-md-4">
-                            {{ form.categoria.label(class="form-label") }}
-                            {{ form.categoria(class="form-select") }}
-                            {% if form.categoria.errors %}
+                            <label class="form-label">Categoria *</label>
+                            <div class="form-check">
+                                {{ form.categoria_material(class="form-check-input") }}
+                                {{ form.categoria_material.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-check">
+                                {{ form.categoria_servico(class="form-check-input") }}
+                                {{ form.categoria_servico.label(class="form-check-label") }}
+                            </div>
+                            <small class="text-muted">Selecione pelo menos uma categoria</small>
+                            {% if form.categoria_material.errors %}
                                 <div class="text-danger">
-                                    {% for error in form.categoria.errors %}{{ error }}{% endfor %}
+                                    {% for error in form.categoria_material.errors %}{{ error }}{% endfor %}
                                 </div>
                             {% endif %}
                         </div>

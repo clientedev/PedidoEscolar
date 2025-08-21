@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, MultipleFileField
-from wtforms import StringField, TextAreaField, SelectField, PasswordField, BooleanField, SubmitField, DecimalField, DateField
+from wtforms import StringField, TextAreaField, SelectField, PasswordField, BooleanField, SubmitField, DecimalField, DateField, SelectMultipleField
 from wtforms.validators import DataRequired, Length, Email, ValidationError, Optional, NumberRange
 from models import User, AcquisitionRequest
 
@@ -15,7 +15,8 @@ class AcquisitionRequestForm(FlaskForm):
     description = TextAreaField('Descrição', validators=[DataRequired(), Length(min=10, max=1000)])
     status = SelectField('Status', validators=[DataRequired()])
     classe = SelectField('Classe', validators=[DataRequired()])
-    categoria = SelectField('Categoria', validators=[DataRequired()])
+    categoria_material = BooleanField('Material')
+    categoria_servico = BooleanField('Serviço')
     observations = TextAreaField('Observações', validators=[Optional(), Length(max=500)])
     estimated_value = DecimalField('Valor Estimado (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     final_value = DecimalField('Valor Final (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
@@ -27,14 +28,17 @@ class AcquisitionRequestForm(FlaskForm):
     ])
     submit = SubmitField('Salvar Pedido')
     
+    def validate_categoria_material(self, field):
+        if not self.categoria_material.data and not self.categoria_servico.data:
+            raise ValidationError('Selecione pelo menos uma categoria.')
+    
     def __init__(self, *args, **kwargs):
         super(AcquisitionRequestForm, self).__init__(*args, **kwargs)
         # Populate status choices
         self.status.choices = AcquisitionRequest.STATUS_CHOICES
         # Populate classe choices
         self.classe.choices = AcquisitionRequest.CLASSE_CHOICES
-        # Populate categoria choices
-        self.categoria.choices = AcquisitionRequest.CATEGORIA_CHOICES
+        # Categoria fields are now checkboxes, no choices needed
         # Populate responsible choices with active users
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
@@ -49,7 +53,8 @@ class EditRequestForm(FlaskForm):
     description = TextAreaField('Descrição', validators=[DataRequired(), Length(min=10, max=1000)])
     status = SelectField('Status', validators=[DataRequired()])
     classe = SelectField('Classe', validators=[DataRequired()])
-    categoria = SelectField('Categoria', validators=[DataRequired()])
+    categoria_material = BooleanField('Material')
+    categoria_servico = BooleanField('Serviço')
     observations = TextAreaField('Observações', validators=[Optional(), Length(max=500)])
     estimated_value = DecimalField('Valor Estimado (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     final_value = DecimalField('Valor Final (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
@@ -62,11 +67,15 @@ class EditRequestForm(FlaskForm):
     change_comments = TextAreaField('Comentários sobre a alteração', validators=[Optional(), Length(max=500)])
     submit = SubmitField('Atualizar Pedido')
     
+    def validate_categoria_material(self, field):
+        if not self.categoria_material.data and not self.categoria_servico.data:
+            raise ValidationError('Selecione pelo menos uma categoria.')
+    
     def __init__(self, *args, **kwargs):
         super(EditRequestForm, self).__init__(*args, **kwargs)
         self.status.choices = AcquisitionRequest.STATUS_CHOICES
         self.classe.choices = AcquisitionRequest.CLASSE_CHOICES
-        self.categoria.choices = AcquisitionRequest.CATEGORIA_CHOICES
+        # Categoria fields are now checkboxes, no choices needed
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
         ]

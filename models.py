@@ -36,7 +36,7 @@ class AcquisitionRequest(db.Model):
     final_value = db.Column(db.Numeric(10, 2))      # Valor final para fase de compra/entrega
     request_date = db.Column(db.Date, nullable=False, default=date.today)
     classe = db.Column(db.String(50), nullable=False, default='ensino')  # Ensino ou Manutenção
-    categoria = db.Column(db.String(50), nullable=False, default='material')  # Serviço ou Material
+    categoria = db.Column(db.String(100), nullable=False, default='material')  # Serviço ou Material (podem ser múltiplas separadas por vírgula)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -65,7 +65,8 @@ class AcquisitionRequest(db.Model):
     # Categoria choices
     CATEGORIA_CHOICES = [
         ('material', 'Material'),
-        ('servico', 'Serviço')
+        ('servico', 'Serviço'),
+        ('material,servico', 'Material e Serviço')
     ]
     
     def get_status_display(self):
@@ -77,8 +78,16 @@ class AcquisitionRequest(db.Model):
         return classe_dict.get(self.classe, self.classe)
     
     def get_categoria_display(self):
-        categoria_dict = dict(self.CATEGORIA_CHOICES)
-        return categoria_dict.get(self.categoria, self.categoria)
+        if not self.categoria:
+            return 'Não definida'
+        
+        categorias = self.categoria.split(',')
+        categoria_dict = {'material': 'Material', 'servico': 'Serviço'}
+        display_names = [categoria_dict.get(cat.strip(), cat.strip()) for cat in categorias]
+        
+        if len(display_names) > 1:
+            return ' e '.join(display_names)
+        return display_names[0] if display_names else 'Não definida'
     
     def __repr__(self):
         return f'<AcquisitionRequest {self.title}>'

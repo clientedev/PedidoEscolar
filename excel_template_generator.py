@@ -63,6 +63,18 @@ def generate_import_template():
             "24500.00",
             "Edson Lemes",
             ""
+        ],
+        [
+            "Serviço de Manutenção e Material",
+            "Reparo do sistema elétrico com fornecimento de materiais necessários",
+            "orcamento",
+            "manutencao",
+            "material,servico",
+            "2025-08-18",
+            "800.00",
+            "",
+            "Edilson Costa",
+            "Categoria múltipla: Material e Serviço"
         ]
     ]
     
@@ -85,7 +97,7 @@ def generate_import_template():
         ["   • Descrição: Descrição detalhada (mínimo 10 caracteres)", ""],
         ["   • Status: Deve ser um dos valores abaixo:", ""],
         ["   • Classe: ensino ou manutencao", ""],
-        ["   • Categoria: material ou servico", ""],
+        ["   • Categoria: material, servico, ou material,servico (múltiplas)", ""],
         ["   • Data da Solicitação: Formato AAAA-MM-DD (ex: 2025-08-20)", ""],
         ["     - orcamento (Orçamento)", ""],
         ["     - fase_compra (Fase de Compra)", ""],
@@ -104,8 +116,14 @@ def generate_import_template():
         ["   • Datas devem estar no formato AAAA-MM-DD", ""],
         ["   • Se o responsável não for encontrado, o campo ficará vazio", ""],
         ["   • Máximo de 100 pedidos por importação", ""],
+        ["   • Para categoria múltipla, use vírgula: material,servico", ""],
         ["", ""],
-        ["4. Status disponíveis:", ""]
+        ["4. Exemplos de categoria:", ""],
+        ["   • material: Apenas Material", ""],
+        ["   • servico: Apenas Serviço", ""],
+        ["   • material,servico: Material e Serviço juntos", ""],
+        ["", ""],
+        ["5. Status disponíveis:", ""]
     ]
     
     # Add status list to instructions

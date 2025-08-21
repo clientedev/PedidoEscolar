@@ -37,7 +37,8 @@
                 
                 <div class="alert alert-info">
                     <i class="fas fa-lightbulb me-2"></i>
-                    <strong>Dica:</strong> Você pode importar até 100 pedidos por vez. Campos marcados com * são obrigatórios.
+                    <strong>Dica:</strong> Você pode importar até 100 pedidos por vez. Campos marcados com * são obrigatórios.<br>
+                    <strong>Novidade:</strong> Agora você pode selecionar múltiplas categorias usando vírgula: "material,servico"
                 </div>
             </div>
         </div>
@@ -118,6 +119,8 @@
                             <li><strong>Título:</strong> Mínimo 5 caracteres</li>
                             <li><strong>Descrição:</strong> Mínimo 10 caracteres</li>
                             <li><strong>Status:</strong> orcamento, fase_compra, a_caminho, ou finalizado</li>
+                            <li><strong>Classe:</strong> ensino ou manutencao</li>
+                            <li><strong>Categoria:</strong> material, servico, ou material,servico (para ambos)</li>
                         </ul>
                     </div>
                     <div class="col-md-6">
@@ -126,7 +129,17 @@
                             <li><strong>Valor Estimado/Final:</strong> Números com ponto decimal (ex: 123.45)</li>
                             <li><strong>Responsável:</strong> Nome completo do usuário existente</li>
                             <li><strong>Observações:</strong> Comentários adicionais</li>
+                            <li><strong>Data Solicitação:</strong> Formato DD/MM/AAAA (padrão: hoje)</li>
                         </ul>
+                        
+                        <div class="alert alert-info mt-3">
+                            <h6><i class="fas fa-info-circle me-2"></i>Categoria - Seleção Múltipla:</h6>
+                            <ul class="mb-0">
+                                <li><code>material</code> - Apenas Material</li>
+                                <li><code>servico</code> - Apenas Serviço</li>
+                                <li><code>material,servico</code> - Material e Serviço juntos</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>

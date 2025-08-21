@@ -14,10 +14,10 @@
         </a>
         {% if current_user.is_admin %}
         <div class="btn-group">
-            <a href="{{ url_for('generate_filtered_pdf', search=current_search, status_filter=current_status_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
+            <a href="{{ url_for('generate_filtered_pdf', search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
                 <i class="fas fa-file-pdf me-1"></i>Relatório PDF
             </a>
-            <a href="{{ url_for('export_excel_filtered', search=current_search, status_filter=current_status_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
+            <a href="{{ url_for('export_excel_filtered', search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
                 <i class="fas fa-file-excel me-1"></i>Relatório Excel
             </a>
         </div>
@@ -71,29 +71,37 @@
 <div class="card mb-4">
     <div class="card-body">
         <form method="GET" class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 {{ search_form.search.label(class="form-label") }}
                 {{ search_form.search(class="form-control", placeholder="Buscar por título ou descrição...") }}
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 {{ search_form.status_filter.label(class="form-label") }}
                 {{ search_form.status_filter(class="form-select") }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.classe_filter.label(class="form-label") }}
+                {{ search_form.classe_filter(class="form-select") }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.categoria_filter.label(class="form-label") }}
+                {{ search_form.categoria_filter(class="form-select") }}
             </div>
             <div class="col-md-2">
                 {{ search_form.responsible_filter.label(class="form-label") }}
                 {{ search_form.responsible_filter(class="form-select") }}
             </div>
-            <div class="col-md-2">
+            <div class="col-md-1">
                 {{ search_form.date_from.label(class="form-label") }}
                 {{ search_form.date_from(class="form-control") }}
             </div>
-            <div class="col-md-2">
+            <div class="col-md-1">
                 {{ search_form.date_to.label(class="form-label") }}
                 {{ search_form.date_to(class="form-control") }}
             </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-secondary me-2">
-                    <i class="fas fa-search"></i> Filtrar
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-secondary me-1">
+                    <i class="fas fa-search"></i>
                 </button>
                 <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-times"></i>
@@ -117,6 +125,8 @@
                             <th>ID</th>
                             <th>Título</th>
                             <th>Status</th>
+                            <th>Classe</th>
+                            <th>Categoria</th>
                             <th>Valor Estimado</th>
                             <th>Valor Final</th>
                             <th>Responsável</th>
@@ -152,6 +162,32 @@
                                 } %}
                                 <span class="badge bg-{{ status_classes.get(request.status, 'secondary') }} text-white">
                                     {{ status_names.get(request.status, request.status) }}
+                                </span>
+                            </td>
+                            <td>
+                                {% set classe_classes = {
+                                    'ensino': 'info',
+                                    'manutencao': 'secondary'
+                                } %}
+                                {% set classe_names = {
+                                    'ensino': 'Ensino',
+                                    'manutencao': 'Manutenção'
+                                } %}
+                                <span class="badge bg-{{ classe_classes.get(request.classe, 'secondary') }} text-white">
+                                    {{ classe_names.get(request.classe, request.classe) }}
+                                </span>
+                            </td>
+                            <td>
+                                {% set categoria_classes = {
+                                    'material': 'success',
+                                    'servico': 'warning'
+                                } %}
+                                {% set categoria_names = {
+                                    'material': 'Material',
+                                    'servico': 'Serviço'
+                                } %}
+                                <span class="badge bg-{{ categoria_classes.get(request.categoria, 'secondary') }} text-white">
+                                    {{ categoria_names.get(request.categoria, request.categoria) }}
                                 </span>
                             </td>
                             <td>

@@ -14,6 +14,8 @@ class AcquisitionRequestForm(FlaskForm):
     title = StringField('Título', validators=[DataRequired(), Length(min=5, max=200)])
     description = TextAreaField('Descrição', validators=[DataRequired(), Length(min=10, max=1000)])
     status = SelectField('Status', validators=[DataRequired()])
+    classe = SelectField('Classe', validators=[DataRequired()])
+    categoria = SelectField('Categoria', validators=[DataRequired()])
     observations = TextAreaField('Observações', validators=[Optional(), Length(max=500)])
     estimated_value = DecimalField('Valor Estimado (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     final_value = DecimalField('Valor Final (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
@@ -29,6 +31,10 @@ class AcquisitionRequestForm(FlaskForm):
         super(AcquisitionRequestForm, self).__init__(*args, **kwargs)
         # Populate status choices
         self.status.choices = AcquisitionRequest.STATUS_CHOICES
+        # Populate classe choices
+        self.classe.choices = AcquisitionRequest.CLASSE_CHOICES
+        # Populate categoria choices
+        self.categoria.choices = AcquisitionRequest.CATEGORIA_CHOICES
         # Populate responsible choices with active users
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
@@ -42,6 +48,8 @@ class EditRequestForm(FlaskForm):
     title = StringField('Título', validators=[DataRequired(), Length(min=5, max=200)])
     description = TextAreaField('Descrição', validators=[DataRequired(), Length(min=10, max=1000)])
     status = SelectField('Status', validators=[DataRequired()])
+    classe = SelectField('Classe', validators=[DataRequired()])
+    categoria = SelectField('Categoria', validators=[DataRequired()])
     observations = TextAreaField('Observações', validators=[Optional(), Length(max=500)])
     estimated_value = DecimalField('Valor Estimado (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     final_value = DecimalField('Valor Final (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
@@ -57,6 +65,8 @@ class EditRequestForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(EditRequestForm, self).__init__(*args, **kwargs)
         self.status.choices = AcquisitionRequest.STATUS_CHOICES
+        self.classe.choices = AcquisitionRequest.CLASSE_CHOICES
+        self.categoria.choices = AcquisitionRequest.CATEGORIA_CHOICES
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
         ]
@@ -98,6 +108,8 @@ class FirstPasswordForm(FlaskForm):
 class SearchForm(FlaskForm):
     search = StringField('Buscar', validators=[Optional(), Length(max=100)])
     status_filter = SelectField('Filtrar por Status', validators=[Optional()])
+    classe_filter = SelectField('Filtrar por Classe', validators=[Optional()])
+    categoria_filter = SelectField('Filtrar por Categoria', validators=[Optional()])
     responsible_filter = SelectField('Filtrar por Responsável', coerce=int, validators=[Optional()])
     date_from = DateField('Data Inicial', validators=[Optional()])
     date_to = DateField('Data Final', validators=[Optional()])
@@ -106,6 +118,8 @@ class SearchForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
         self.status_filter.choices = [('', 'Todos os status')] + AcquisitionRequest.STATUS_CHOICES
+        self.classe_filter.choices = [('', 'Todas as classes')] + AcquisitionRequest.CLASSE_CHOICES
+        self.categoria_filter.choices = [('', 'Todas as categorias')] + AcquisitionRequest.CATEGORIA_CHOICES
         self.responsible_filter.choices = [(0, 'Todos os responsáveis')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
         ]

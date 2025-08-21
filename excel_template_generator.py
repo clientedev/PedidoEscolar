@@ -19,7 +19,7 @@ def generate_import_template():
     
     # Headers
     headers = [
-        "Título*", "Descrição*", "Status*", "Data da Solicitação*",
+        "Título*", "Descrição*", "Status*", "Classe*", "Categoria*", "Data da Solicitação*",
         "Valor Estimado", "Valor Final", "Responsável (Nome)", "Observações"
     ]
     
@@ -44,6 +44,8 @@ def generate_import_template():
             "Compra de Material de Escritório",
             "Aquisição de canetas, papéis e materiais básicos para o escritório administrativo",
             "orcamento",
+            "ensino",
+            "material",
             "2025-08-20",
             "150.00",
             "",
@@ -54,6 +56,8 @@ def generate_import_template():
             "Equipamento de Informática",
             "Computadores para laboratório de informática - 10 unidades",
             "fase_compra",
+            "ensino",
+            "material",
             "2025-08-15",
             "25000.00",
             "24500.00",
@@ -80,6 +84,8 @@ def generate_import_template():
         ["   • Título: Nome do pedido (mínimo 5 caracteres)", ""],
         ["   • Descrição: Descrição detalhada (mínimo 10 caracteres)", ""],
         ["   • Status: Deve ser um dos valores abaixo:", ""],
+        ["   • Classe: ensino ou manutencao", ""],
+        ["   • Categoria: material ou servico", ""],
         ["   • Data da Solicitação: Formato AAAA-MM-DD (ex: 2025-08-20)", ""],
         ["     - orcamento (Orçamento)", ""],
         ["     - fase_compra (Fase de Compra)", ""],
@@ -137,7 +143,7 @@ def process_import_file(file_path, current_user):
             if not any(row):  # Skip empty rows
                 continue
                 
-            titulo, descricao, status, data_solicitacao, valor_estimado, valor_final, responsavel_nome, observacoes = row[:8]
+            titulo, descricao, status, classe, categoria, data_solicitacao, valor_estimado, valor_final, responsavel_nome, observacoes = row[:10]
             
             # Validate required fields
             if not titulo or len(str(titulo).strip()) < 5:
@@ -150,6 +156,14 @@ def process_import_file(file_path, current_user):
                 
             if not status or status not in [s[0] for s in AcquisitionRequest.STATUS_CHOICES]:
                 erros.append(f"Linha {row_idx}: Status inválido. Use: {', '.join([s[0] for s in AcquisitionRequest.STATUS_CHOICES])}")
+                continue
+                
+            if not classe or classe not in [c[0] for c in AcquisitionRequest.CLASSE_CHOICES]:
+                erros.append(f"Linha {row_idx}: Classe inválida. Use: {', '.join([c[0] for c in AcquisitionRequest.CLASSE_CHOICES])}")
+                continue
+                
+            if not categoria or categoria not in [c[0] for c in AcquisitionRequest.CATEGORIA_CHOICES]:
+                erros.append(f"Linha {row_idx}: Categoria inválida. Use: {', '.join([c[0] for c in AcquisitionRequest.CATEGORIA_CHOICES])}")
                 continue
                 
             # Validate and parse date
@@ -195,6 +209,8 @@ def process_import_file(file_path, current_user):
                 'titulo': str(titulo).strip(),
                 'descricao': str(descricao).strip(),
                 'status': status,
+                'classe': classe,
+                'categoria': categoria,
                 'data_solicitacao': data_parsed,
                 'valor_estimado': valor_estimado_parsed,
                 'valor_final': valor_final_parsed,

@@ -40,15 +40,45 @@
                     </div>
                     
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             {% if form.status %}
                                 {{ form.status.label(class="form-label") }}
                                 {{ form.status(class="form-select") }}
                             {% endif %}
                         </div>
+                        <div class="col-md-4">
+                            {{ form.classe.label(class="form-label") }}
+                            {{ form.classe(class="form-select") }}
+                            {% if form.classe.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.classe.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.categoria.label(class="form-label") }}
+                            {{ form.categoria(class="form-select") }}
+                            {% if form.categoria.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.categoria.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
                         <div class="col-md-6">
                             {{ form.responsible_id.label(class="form-label") }}
                             {{ form.responsible_id(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.request_date.label(class="form-label") }}
+                            {{ form.request_date(class="form-control") }}
+                            {% if form.request_date.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.request_date.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -75,18 +105,7 @@
                         </div>
                     </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            {{ form.request_date.label(class="form-label") }}
-                            {{ form.request_date(class="form-control" + (" is-invalid" if form.request_date.errors else "")) }}
-                            <div class="form-text">Data da solicitação do pedido</div>
-                            {% if form.request_date.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.request_date.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
+
                     
                     <div class="row mb-3">
                         <div class="col-12">

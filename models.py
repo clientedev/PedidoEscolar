@@ -35,6 +35,8 @@ class AcquisitionRequest(db.Model):
     estimated_value = db.Column(db.Numeric(10, 2))  # Valor estimado para fase de orçamento
     final_value = db.Column(db.Numeric(10, 2))      # Valor final para fase de compra/entrega
     request_date = db.Column(db.Date, nullable=False, default=date.today)
+    classe = db.Column(db.String(50), nullable=False, default='ensino')  # Ensino ou Manutenção
+    categoria = db.Column(db.String(50), nullable=False, default='material')  # Serviço ou Material
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -54,9 +56,29 @@ class AcquisitionRequest(db.Model):
         ('finalizado', 'Finalizado')
     ]
     
+    # Classe choices
+    CLASSE_CHOICES = [
+        ('ensino', 'Ensino'),
+        ('manutencao', 'Manutenção')
+    ]
+    
+    # Categoria choices
+    CATEGORIA_CHOICES = [
+        ('material', 'Material'),
+        ('servico', 'Serviço')
+    ]
+    
     def get_status_display(self):
         status_dict = dict(self.STATUS_CHOICES)
         return status_dict.get(self.status, self.status)
+    
+    def get_classe_display(self):
+        classe_dict = dict(self.CLASSE_CHOICES)
+        return classe_dict.get(self.classe, self.classe)
+    
+    def get_categoria_display(self):
+        categoria_dict = dict(self.CATEGORIA_CHOICES)
+        return categoria_dict.get(self.categoria, self.categoria)
     
     def __repr__(self):
         return f'<AcquisitionRequest {self.title}>'

@@ -38,6 +38,8 @@ def dashboard():
     search_form = SearchForm()
     search = request.args.get('search', '')
     status_filter = request.args.get('status_filter', '')
+    classe_filter = request.args.get('classe_filter', '')
+    categoria_filter = request.args.get('categoria_filter', '')
     responsible_filter = request.args.get('responsible_filter', 0, type=int)
     date_from = request.args.get('date_from', '')
     date_to = request.args.get('date_to', '')
@@ -53,6 +55,12 @@ def dashboard():
     
     if status_filter:
         query = query.filter(AcquisitionRequest.status == status_filter)
+        
+    if classe_filter:
+        query = query.filter(AcquisitionRequest.classe == classe_filter)
+        
+    if categoria_filter:
+        query = query.filter(AcquisitionRequest.categoria == categoria_filter)
     
     if responsible_filter > 0:
         query = query.filter(AcquisitionRequest.responsible_id == responsible_filter)
@@ -85,6 +93,8 @@ def dashboard():
     # Set form defaults from URL parameters
     search_form.search.data = search
     search_form.status_filter.data = status_filter
+    search_form.classe_filter.data = classe_filter
+    search_form.categoria_filter.data = categoria_filter
     search_form.responsible_filter.data = responsible_filter
     if date_from:
         try:
@@ -110,6 +120,8 @@ def dashboard():
                          total_final=total_final,
                          current_search=search,
                          current_status_filter=status_filter,
+                         current_classe_filter=classe_filter,
+                         current_categoria_filter=categoria_filter,
                          current_responsible_filter=responsible_filter,
                          current_date_from=date_from,
                          current_date_to=date_to)
@@ -181,6 +193,8 @@ def new_request():
         request_obj.title = form.title.data
         request_obj.description = form.description.data
         request_obj.status = form.status.data
+        request_obj.classe = form.classe.data
+        request_obj.categoria = form.categoria.data
         request_obj.observations = form.observations.data
         request_obj.estimated_value = form.estimated_value.data
         request_obj.final_value = form.final_value.data
@@ -251,6 +265,8 @@ def edit_request(id):
         request_obj.title = form.title.data
         request_obj.description = form.description.data
         request_obj.status = form.status.data
+        request_obj.classe = form.classe.data
+        request_obj.categoria = form.categoria.data
         request_obj.observations = form.observations.data
         request_obj.estimated_value = form.estimated_value.data
         request_obj.final_value = form.final_value.data
@@ -460,6 +476,8 @@ def generate_filtered_pdf():
         # Get the same filter parameters as dashboard
         search = request.args.get('search', '')
         status_filter = request.args.get('status_filter', '')
+        classe_filter = request.args.get('classe_filter', '')
+        categoria_filter = request.args.get('categoria_filter', '')
         responsible_filter = request.args.get('responsible_filter', 0, type=int)
         date_from = request.args.get('date_from', '')
         date_to = request.args.get('date_to', '')
@@ -475,6 +493,12 @@ def generate_filtered_pdf():
         
         if status_filter:
             query = query.filter(AcquisitionRequest.status == status_filter)
+            
+        if classe_filter:
+            query = query.filter(AcquisitionRequest.classe == classe_filter)
+            
+        if categoria_filter:
+            query = query.filter(AcquisitionRequest.categoria == categoria_filter)
         
         if responsible_filter > 0:
             query = query.filter(AcquisitionRequest.responsible_id == responsible_filter)
@@ -554,6 +578,8 @@ def export_excel_filtered():
     # Get the same filter parameters as dashboard
     search = request.args.get('search', '')
     status_filter = request.args.get('status_filter', '')
+    classe_filter = request.args.get('classe_filter', '')
+    categoria_filter = request.args.get('categoria_filter', '')
     responsible_filter = request.args.get('responsible_filter', 0, type=int)
     date_from = request.args.get('date_from', '')
     date_to = request.args.get('date_to', '')
@@ -569,6 +595,12 @@ def export_excel_filtered():
     
     if status_filter:
         query = query.filter(AcquisitionRequest.status == status_filter)
+        
+    if classe_filter:
+        query = query.filter(AcquisitionRequest.classe == classe_filter)
+        
+    if categoria_filter:
+        query = query.filter(AcquisitionRequest.categoria == categoria_filter)
     
     if responsible_filter > 0:
         query = query.filter(AcquisitionRequest.responsible_id == responsible_filter)
@@ -678,6 +710,8 @@ def process_bulk_import():
                     request_obj.title = pedido_data['titulo']
                     request_obj.description = pedido_data['descricao']
                     request_obj.status = pedido_data['status']
+                    request_obj.classe = pedido_data['classe']
+                    request_obj.categoria = pedido_data['categoria']
                     request_obj.estimated_value = pedido_data['valor_estimado']
                     request_obj.final_value = pedido_data['valor_final']
                     request_obj.responsible_id = pedido_data['responsible_id']

@@ -25,9 +25,9 @@ def generate_requests_excel(requests=None):
     
     # Headers
     headers = [
-        "ID", "Descrição do Item", "Responsável pela Cotação", 
-        "Status de Andamento", "Valor Estimado", "Valor Final", "Observação", "Data de Criação", 
-        "Última Atualização", "Criado por", "Anexos"
+        "ID", "Título", "Descrição", "Status", "Classe", "Categoria",
+        "Responsável", "Valor Estimado", "Valor Final", "Data Solicitação",
+        "Observações", "Data Criação", "Última Atualização", "Criado por", "Anexos"
     ]
     
     for col, header in enumerate(headers, 1):
@@ -38,12 +38,12 @@ def generate_requests_excel(requests=None):
         cell.border = border
         
         # Set column width
-        if header == "Descrição do Item":
-            ws.column_dimensions[get_column_letter(col)].width = 40
-        elif header == "Observação":
+        if header in ["Título", "Descrição"]:
             ws.column_dimensions[get_column_letter(col)].width = 30
+        elif header in ["Observações", "Responsável"]:
+            ws.column_dimensions[get_column_letter(col)].width = 25
         else:
-            ws.column_dimensions[get_column_letter(col)].width = 18
+            ws.column_dimensions[get_column_letter(col)].width = 15
     
     # Data rows
     for row, request in enumerate(requests, 2):
@@ -61,14 +61,29 @@ def generate_requests_excel(requests=None):
         attachments_count = request.attachments.count()
         attachments_text = f"{attachments_count} arquivo(s)" if attachments_count > 0 else "Nenhum anexo"
         
+        # Get classe and categoria display names
+        classe_display = ""
+        if hasattr(request, 'classe') and request.classe:
+            classe_names = {'ensino': 'Ensino', 'manutencao': 'Manutenção'}
+            classe_display = classe_names.get(request.classe, request.classe)
+            
+        categoria_display = ""
+        if hasattr(request, 'categoria') and request.categoria:
+            categoria_names = {'material': 'Material', 'servico': 'Serviço'}
+            categoria_display = categoria_names.get(request.categoria, request.categoria)
+            
         # Data
         data = [
             request.id,
             request.title,
-            responsible_name,
+            request.description or "",
             status_display,
+            classe_display,
+            categoria_display,
+            responsible_name,
             f"R$ {request.estimated_value:.2f}" if request.estimated_value else "Não informado",
             f"R$ {request.final_value:.2f}" if request.final_value else "Não informado",
+            request.request_date.strftime("%d/%m/%Y") if request.request_date else "",
             request.observations or "",
             request.created_at.strftime("%d/%m/%Y %H:%M") if request.created_at else "",
             request.updated_at.strftime("%d/%m/%Y %H:%M") if request.updated_at else "",
@@ -81,7 +96,7 @@ def generate_requests_excel(requests=None):
             cell.border = border
             cell.alignment = Alignment(vertical="top", wrap_text=True)
             
-            # Color coding based on status
+            # Color coding based on status (column 4)
             if col == 4:  # Status column
                 if request.status == 'finalizado':
                     cell.fill = PatternFill(start_color="D4E6B7", end_color="D4E6B7", fill_type="solid")
@@ -91,6 +106,22 @@ def generate_requests_excel(requests=None):
                     cell.fill = PatternFill(start_color="E1D5E7", end_color="E1D5E7", fill_type="solid")
                 else:  # orcamento
                     cell.fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+            
+            # Color coding for Classe (column 5)
+            elif col == 5:
+                if hasattr(request, 'classe'):
+                    if request.classe == 'ensino':
+                        cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")  # Light blue
+                    elif request.classe == 'manutencao':
+                        cell.fill = PatternFill(start_color="E6E6FA", end_color="E6E6FA", fill_type="solid")  # Light lavender
+                        
+            # Color coding for Categoria (column 6)  
+            elif col == 6:
+                if hasattr(request, 'categoria'):
+                    if request.categoria == 'material':
+                        cell.fill = PatternFill(start_color="D4EDDA", end_color="D4EDDA", fill_type="solid")  # Light green
+                    elif request.categoria == 'servico':
+                        cell.fill = PatternFill(start_color="FFF3CD", end_color="FFF3CD", fill_type="solid")  # Light yellow
     
     # Add summary sheet
     ws2 = wb.create_sheet("Resumo")

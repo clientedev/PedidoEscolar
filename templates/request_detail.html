@@ -63,6 +63,41 @@
                 </div>
                 
                 <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Classe:</strong>
+                        {% set classe_classes = {
+                            'ensino': 'info',
+                            'manutencao': 'secondary'
+                        } %}
+                        {% set classe_names = {
+                            'ensino': 'Ensino',
+                            'manutencao': 'Manutenção'
+                        } %}
+                        <span class="badge bg-{{ classe_classes.get(request_obj.classe, 'secondary') }} text-white ms-1">
+                            {{ classe_names.get(request_obj.classe, request_obj.classe) }}
+                        </span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Categoria:</strong>
+                        {% set categoria_classes = {
+                            'material': 'success',
+                            'servico': 'warning'
+                        } %}
+                        {% set categoria_names = {
+                            'material': 'Material',
+                            'servico': 'Serviço'
+                        } %}
+                        <span class="badge bg-{{ categoria_classes.get(request_obj.categoria, 'secondary') }} text-white ms-1">
+                            {{ categoria_names.get(request_obj.categoria, request_obj.categoria) }}
+                        </span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Data da Solicitação:</strong>
+                        {{ request_obj.request_date.strftime('%d/%m/%Y') }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>Responsável:</strong>
                         {% if request_obj.responsible %}
@@ -70,10 +105,6 @@
                         {% else %}
                             <span class="text-muted">Não definido</span>
                         {% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Data da Solicitação:</strong>
-                        {{ request_obj.request_date.strftime('%d/%m/%Y') }}
                     </div>
                 </div>
                 

@@ -233,3 +233,54 @@
     letter-spacing: 0.05em;
     opacity: 0.8;
 }
+
+/* Table no-wrap styling - prevents content from breaking to new lines */
+.table-nowrap {
+    white-space: nowrap;
+}
+
+.table-nowrap th,
+.table-nowrap td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-nowrap .btn-group {
+    white-space: nowrap;
+}
+
+/* Specific column width constraints */
+.table-nowrap td:nth-child(2) {
+    max-width: 200px;
+}
+
+.table-nowrap td:nth-child(8),
+.table-nowrap td:nth-child(9) {
+    max-width: 150px;
+}
+
+/* Ensure action buttons stay in a single line */
+.table-nowrap .btn-group .btn {
+    padding: 0.25rem 0.5rem;
+    margin: 0;
+}
+
+/* Pagination styling improvements */
+.pagination {
+    margin-bottom: 0;
+}
+
+.pagination .page-link {
+    color: var(--bs-primary);
+    border-color: var(--bs-border-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.pagination .page-item.disabled .page-link {
+    color: var(--bs-secondary);
+}

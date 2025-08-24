@@ -80,8 +80,15 @@ def dashboard():
         except ValueError:
             pass
     
-    # Order by most recent
-    requests = query.order_by(desc(AcquisitionRequest.updated_at)).all()
+    # Get pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 10  # 10 items per page as requested
+    
+    # Order by most recent and paginate
+    requests_pagination = query.order_by(desc(AcquisitionRequest.updated_at)).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    requests = requests_pagination.items
     
     # Get statistics for dashboard
     total_requests = AcquisitionRequest.query.count()
@@ -113,6 +120,7 @@ def dashboard():
     
     return render_template('dashboard.html', 
                          requests=requests, 
+                         pagination=requests_pagination,
                          search_form=search_form,
                          total_requests=total_requests,
                          status_counts=status_counts,

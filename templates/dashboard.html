@@ -70,42 +70,46 @@
 <!-- Filters -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="GET" class="row g-3">
-            <div class="col-md-3">
-                {{ search_form.search.label(class="form-label") }}
-                {{ search_form.search(class="form-control", placeholder="Buscar por título ou descrição...") }}
+        <form method="GET">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    {{ search_form.search.label(class="form-label") }}
+                    {{ search_form.search(class="form-control", placeholder="Buscar por título ou descrição...") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.status_filter.label(class="form-label") }}
+                    {{ search_form.status_filter(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.classe_filter.label(class="form-label") }}
+                    {{ search_form.classe_filter(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.categoria_filter.label(class="form-label") }}
+                    {{ search_form.categoria_filter(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.responsible_filter.label(class="form-label") }}
+                    {{ search_form.responsible_filter(class="form-select") }}
+                </div>
             </div>
-            <div class="col-md-2">
-                {{ search_form.status_filter.label(class="form-label") }}
-                {{ search_form.status_filter(class="form-select") }}
-            </div>
-            <div class="col-md-2">
-                {{ search_form.classe_filter.label(class="form-label") }}
-                {{ search_form.classe_filter(class="form-select") }}
-            </div>
-            <div class="col-md-2">
-                {{ search_form.categoria_filter.label(class="form-label") }}
-                {{ search_form.categoria_filter(class="form-select") }}
-            </div>
-            <div class="col-md-2">
-                {{ search_form.responsible_filter.label(class="form-label") }}
-                {{ search_form.responsible_filter(class="form-select") }}
-            </div>
-            <div class="col-md-1">
-                {{ search_form.date_from.label(class="form-label") }}
-                {{ search_form.date_from(class="form-control") }}
-            </div>
-            <div class="col-md-1">
-                {{ search_form.date_to.label(class="form-label") }}
-                {{ search_form.date_to(class="form-control") }}
-            </div>
-            <div class="col-md-1 d-flex align-items-end">
-                <button type="submit" class="btn btn-secondary me-1">
-                    <i class="fas fa-search"></i>
-                </button>
-                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-times"></i>
-                </a>
+            <div class="row g-3">
+                <div class="col-md-2">
+                    {{ search_form.date_from.label(class="form-label") }}
+                    {{ search_form.date_from(class="form-control") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.date_to.label(class="form-label") }}
+                    {{ search_form.date_to(class="form-control") }}
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-secondary me-2">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
             </div>
         </form>
     </div>
@@ -119,20 +123,20 @@
     <div class="card-body">
         {% if requests %}
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover table-nowrap">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Status</th>
-                            <th>Classe</th>
-                            <th>Categoria</th>
-                            <th>Valor Estimado</th>
-                            <th>Valor Final</th>
-                            <th>Responsável</th>
-                            <th>Criado por</th>
-                            <th>Data da Solicitação</th>
-                            <th>Ações</th>
+                            <th style="min-width: 60px;">ID</th>
+                            <th style="min-width: 200px;">Título</th>
+                            <th style="min-width: 120px;">Status</th>
+                            <th style="min-width: 100px;">Classe</th>
+                            <th style="min-width: 100px;">Categoria</th>
+                            <th style="min-width: 120px;">Valor Estimado</th>
+                            <th style="min-width: 120px;">Valor Final</th>
+                            <th style="min-width: 150px;">Responsável</th>
+                            <th style="min-width: 120px;">Criado por</th>
+                            <th style="min-width: 120px;">Data da Solicitação</th>
+                            <th style="min-width: 200px;">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -248,6 +252,55 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Navegação de páginas" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('dashboard', page=pagination.prev_num, search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-chevron-left"></i> Anterior</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num != pagination.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('dashboard', page=page_num, search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('dashboard', page=pagination.next_num, search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
+                            Próxima <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Próxima <i class="fas fa-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
         {% else %}
             <div class="text-center py-5">
                 <i class="fas fa-inbox fa-3x text-muted mb-3"></i>

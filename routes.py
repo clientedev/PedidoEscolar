@@ -114,9 +114,10 @@ def dashboard():
         except ValueError:
             pass
     
-    # Calculate totals
-    total_estimated = sum([req.estimated_value or 0 for req in requests])
-    total_final = sum([req.final_value or 0 for req in requests])
+    # Calculate totals from all filtered requests (not just current page)
+    all_filtered_requests = query.all()  # Get all requests matching the filters
+    total_estimated = sum([req.estimated_value or 0 for req in all_filtered_requests])
+    total_final = sum([req.final_value or 0 for req in all_filtered_requests])
     
     return render_template('dashboard.html', 
                          requests=requests, 

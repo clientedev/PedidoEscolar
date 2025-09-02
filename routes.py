@@ -266,10 +266,6 @@ def view_request(id):
 def edit_request(id):
     request_obj = AcquisitionRequest.query.get_or_404(id)
     
-    # Only the creator can edit
-    if request_obj.created_by_id != current_user.id:
-        flash('Você não tem permissão para editar este pedido.', 'danger')
-        return redirect(url_for('view_request', id=id))
     
     form = EditRequestForm(obj=request_obj)
     if form.validate_on_submit():
@@ -353,10 +349,6 @@ def delete_attachment(id):
     attachment = Attachment.query.get_or_404(id)
     request_obj = attachment.request
     
-    # Only the uploader can delete
-    if attachment.uploaded_by_id != current_user.id:
-        flash('Você não tem permissão para excluir este anexo.', 'danger')
-        return redirect(url_for('view_request', id=request_obj.id))
     
     # Delete file from filesystem
     try:

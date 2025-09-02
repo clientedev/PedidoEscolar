@@ -12,7 +12,6 @@
         <a href="{{ url_for('bulk_import_page') }}" class="btn btn-info">
             <i class="fas fa-upload me-1"></i>Importar em Lote
         </a>
-        {% if current_user.is_admin %}
         <div class="btn-group">
             <a href="{{ url_for('generate_filtered_pdf', search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
                 <i class="fas fa-file-pdf me-1"></i>Relatório PDF
@@ -21,7 +20,6 @@
                 <i class="fas fa-file-excel me-1"></i>Relatório Excel
             </a>
         </div>
-        {% endif %}
     </div>
 </div>
 
@@ -226,7 +224,7 @@
                                     <a href="{{ url_for('view_request', id=request.id) }}" class="btn btn-sm btn-outline-primary" title="Ver detalhes">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    {% if current_user.is_admin or request.created_by_id == current_user.id %}
+                                    {% if request.created_by_id == current_user.id %}
                                     <a href="{{ url_for('edit_request', id=request.id) }}" class="btn btn-sm btn-outline-secondary" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
@@ -237,14 +235,12 @@
                                     <a href="{{ url_for('export_excel_request', id=request.id) }}" class="btn btn-sm btn-outline-success" title="Exportar Excel">
                                         <i class="fas fa-file-excel"></i>
                                     </a>
-                                    {% if current_user.is_admin %}
                                     <form method="POST" action="{{ url_for('delete_request', id=request.id) }}" 
                                           class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.')">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
-                                    {% endif %}
                                 </div>
                             </td>
                         </tr>

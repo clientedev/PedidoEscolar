@@ -40,7 +40,6 @@ Escola SENAI "Morvan Figueiredo"
                             <i class="fas fa-plus me-1"></i>Novo Pedido
                         </a>
                     </li>
-                    {% if current_user.is_admin %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-cog me-1"></i>Administração
@@ -49,12 +48,13 @@ Escola SENAI "Morvan Figueiredo"
                             <li><a class="dropdown-item" href="{{ url_for('admin_panel') }}">
                                 <i class="fas fa-chart-bar me-1"></i>Painel Admin
                             </a></li>
+                            {% if current_user.is_admin %}
                             <li><a class="dropdown-item" href="{{ url_for('user_management') }}">
                                 <i class="fas fa-users me-1"></i>Gerenciar Usuários
                             </a></li>
+                            {% endif %}
                         </ul>
                     </li>
-                    {% endif %}
                 </ul>
                 
                 <ul class="navbar-nav">

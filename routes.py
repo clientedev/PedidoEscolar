@@ -249,9 +249,9 @@ def new_request():
         db.session.add(status_change)
         
         # Handle file uploads
+        attachment_files = request.files.getlist('attachments')
+        app.logger.debug(f"Files found in request: {[f.filename for f in attachment_files]}")
         uploaded_files = []
-        # Get files from the form field directly
-        attachment_files = form.attachments.data
         if attachment_files:
             for file in attachment_files:
                 if file and file.filename:
@@ -266,6 +266,7 @@ def new_request():
                         attachment.uploaded_by_id = current_user.id
                         db.session.add(attachment)
                         uploaded_files.append(original_filename)
+                        app.logger.debug(f"Attachment created for {original_filename}")
         
         db.session.commit()
         
@@ -325,6 +326,7 @@ def edit_request(id):
         
         # Handle attachments
         attachment_files = request.files.getlist('attachments')
+        app.logger.debug(f"Files found in edit request: {[f.filename for f in attachment_files]}")
         uploaded_files = []
         allowed_extensions = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'}
         for file in attachment_files:
@@ -345,6 +347,7 @@ def edit_request(id):
                     )
                     db.session.add(attachment)
                     uploaded_files.append(original_filename)
+                    app.logger.debug(f"Attachment created in edit for {original_filename}")
         
         db.session.commit()
         flash(f'Pedido "{request_obj.title}" atualizado com sucesso!', 'success')

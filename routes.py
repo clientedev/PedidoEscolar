@@ -338,22 +338,42 @@ def edit_request(id):
         # Handle attachments
         try:
             attachment_files = request.files.getlist('attachments')
+            app.logger.info(f"Arquivos recebidos na edicao: {len(attachment_files)}")
+            
             for file in attachment_files:
                 if file and file.filename:
-                    unique_filename, original_filename, file_size, file_content = save_file(file)
-                    if unique_filename and file_content:
+                    filename = secure_filename(file.filename)
+                    name, ext = os.path.splitext(filename)
+                    unique_filename = f"{name}_{secrets.token_hex(8)}{ext}"
+                    
+                    # Reset pointer and read
+                    file.seek(0)
+                    file_content = file.read()
+                    file_size = len(file_content)
+                    
+                    if file_size > 0:
                         attachment = Attachment(
                             filename=unique_filename,
-                            original_filename=original_filename,
+                            original_filename=filename,
                             file_size=file_size,
                             file_content=file_content,
                             request_id=request_obj.id,
                             uploaded_by_id=current_user.id
                         )
                         db.session.add(attachment)
-                        app.logger.info(f"Anexo adicionado na edicao: {original_filename}")
+                        
+                        # Save backup
+                        try:
+                            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                            with open(file_path, 'wb') as f:
+                                f.write(file_content)
+                        except Exception as disk_e:
+                            app.logger.error(f"Erro ao salvar backup em disco: {disk_e}")
+                            
+                        app.logger.info(f"Anexo adicionado: {filename} ({file_size} bytes)")
         except Exception as e:
-            app.logger.error(f"Erro no upload (edicao): {e}")
+            app.logger.error(f"Erro processando anexos na edicao: {e}")
+            flash('Aviso: Alguns anexos podem não ter sido salvos corretamente.', 'warning')
         
         try:
             db.session.commit()
@@ -361,8 +381,8 @@ def edit_request(id):
             return redirect(url_for('view_request', id=id))
         except Exception as e:
             db.session.rollback()
-            app.logger.error(f"Error updating request {id}: {e}")
-            flash('Erro ao salvar no banco de dados.', 'danger')
+            app.logger.error(f"Erro fatal ao salvar pedido {id}: {e}")
+            flash('Erro crítico ao salvar no banco de dados.', 'danger')
             return render_template('request_form.html', form=form, request_obj=request_obj, title='Editar Pedido')
     
     if request.method == 'GET':

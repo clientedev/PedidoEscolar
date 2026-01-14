@@ -245,20 +245,21 @@ def new_request():
         
         # Handle file uploads
         uploaded_files = []
-        # Access files via request.files when form.validate_on_submit() is true
-        files = request.files.getlist(form.attachments.name)
-        for file in files:
-            if file and file.filename:
-                unique_filename, original_filename, file_size = save_file(file)
-                if unique_filename:
-                    attachment = Attachment()
-                    attachment.filename = unique_filename
-                    attachment.original_filename = original_filename
-                    attachment.file_size = file_size
-                    attachment.request_id = request_obj.id
-                    attachment.uploaded_by_id = current_user.id
-                    db.session.add(attachment)
-                    uploaded_files.append(original_filename)
+        # Get files from the form field directly
+        attachment_files = form.attachments.data
+        if attachment_files:
+            for file in attachment_files:
+                if file and file.filename:
+                    unique_filename, original_filename, file_size = save_file(file)
+                    if unique_filename:
+                        attachment = Attachment()
+                        attachment.filename = unique_filename
+                        attachment.original_filename = original_filename
+                        attachment.file_size = file_size
+                        attachment.request_id = request_obj.id
+                        attachment.uploaded_by_id = current_user.id
+                        db.session.add(attachment)
+                        uploaded_files.append(original_filename)
         
         db.session.commit()
         
@@ -285,6 +286,7 @@ def edit_request(id):
     
     form = EditRequestForm(obj=request_obj)
     if form.validate_on_submit():
+        app.logger.debug(f"Form validated for request {id}")
         old_status = request_obj.status
         old_responsible = request_obj.responsible_id
         
@@ -322,19 +324,21 @@ def edit_request(id):
         
         # Handle new file uploads
         uploaded_files = []
-        files = request.files.getlist(form.attachments.name)
-        for file in files:
-            if file and file.filename:
-                unique_filename, original_filename, file_size = save_file(file)
-                if unique_filename:
-                    attachment = Attachment()
-                    attachment.filename = unique_filename
-                    attachment.original_filename = original_filename
-                    attachment.file_size = file_size
-                    attachment.request_id = request_obj.id
-                    attachment.uploaded_by_id = current_user.id
-                    db.session.add(attachment)
-                    uploaded_files.append(original_filename)
+        # Get files from the form field directly to avoid list retrieval issues
+        attachment_files = form.attachments.data
+        if attachment_files:
+            for file in attachment_files:
+                if file and file.filename:
+                    unique_filename, original_filename, file_size = save_file(file)
+                    if unique_filename:
+                        attachment = Attachment()
+                        attachment.filename = unique_filename
+                        attachment.original_filename = original_filename
+                        attachment.file_size = file_size
+                        attachment.request_id = request_obj.id
+                        attachment.uploaded_by_id = current_user.id
+                        db.session.add(attachment)
+                        uploaded_files.append(original_filename)
         
         db.session.commit()
         
@@ -344,15 +348,31 @@ def edit_request(id):
         flash(flash_message, 'success')
         return redirect(url_for('view_request', id=id))
     
+    else:
+        if request.method == 'POST':
+            app.logger.warning(f"Form validation failed for request {id}: {form.errors}")
+            # If there are errors in 'attachments', they might be causing the failure
+            if 'attachments' in form.errors:
+                app.logger.error(f"Attachment errors: {form.errors['attachments']}")
+            flash('Erro ao validar o formulário. Por favor, verifique os campos.', 'danger')
+    
     # Pre-populate form
     if request_obj.responsible_id:
         form.responsible_id.data = request_obj.responsible_id
+    else:
+        form.responsible_id.data = 0
         
     # Pre-populate categoria checkboxes
     if request_obj.categoria:
         categorias = request_obj.categoria.split(',')
         form.categoria_material.data = 'material' in categorias
         form.categoria_servico.data = 'servico' in categorias
+    
+    # Pre-populate priority and impact if not set from form
+    if not form.priority.data:
+        form.priority.data = request_obj.priority
+    if not form.impact.data:
+        form.impact.data = request_obj.impact
     
     return render_template('request_form.html', form=form, request_obj=request_obj, title='Editar Pedido')
 

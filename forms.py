@@ -69,6 +69,7 @@ class EditRequestForm(FlaskForm):
     responsible_id = SelectField('Responsável pela Cotação', coerce=int, validators=[Optional()])
     request_date = DateField('Data da Solicitação', validators=[DataRequired()])
     attachments = MultipleFileField('Anexar Novos Orçamentos', validators=[
+        Optional(),
         FileAllowed(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'], 
                    'Apenas arquivos PDF, Word, Excel e imagens são permitidos.')
     ])

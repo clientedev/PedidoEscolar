@@ -26,13 +26,17 @@ def save_file(file):
         name, ext = os.path.splitext(filename)
         unique_filename = f"{name}_{secrets.token_hex(8)}{ext}"
         
-        # Read content for database storage
+        # Reset pointer before reading
+        file.seek(0)
         file_content = file.read()
-        file.seek(0) # Reset file pointer
+        file_size = len(file_content)
         
+        # Save to disk as backup/temp
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-        file.save(file_path)
-        return unique_filename, filename, len(file_content), file_content
+        with open(file_path, 'wb') as f:
+            f.write(file_content)
+            
+        return unique_filename, filename, file_size, file_content
     return None, None, None, None
 
 @app.route('/')
@@ -250,30 +254,22 @@ def new_request():
         
         # Handle file uploads
         attachment_files = request.files.getlist('attachments')
-        app.logger.debug(f"Files found in request: {[f.filename for f in attachment_files]}")
+        app.logger.info(f"Arquivos recebidos na criacao: {[f.filename for f in attachment_files]}")
         uploaded_files = []
-        if attachment_files:
-            for file in attachment_files:
-                if file and file.filename:
-                    # Se o arquivo estiver vazio, ignorar
-                    file.seek(0, os.SEEK_END)
-                    size = file.tell()
-                    file.seek(0)
-                    if size == 0:
-                        continue
-                        
-                    unique_filename, original_filename, file_size, file_content = save_file(file)
-                    if unique_filename:
-                        attachment = Attachment()
-                        attachment.filename = unique_filename
-                        attachment.original_filename = original_filename
-                        attachment.file_size = file_size
-                        attachment.file_content = file_content
-                        attachment.request_id = request_obj.id
-                        attachment.uploaded_by_id = current_user.id
-                        db.session.add(attachment)
-                        uploaded_files.append(original_filename)
-                        app.logger.info(f"Salvo no banco (novo): {original_filename} ({len(file_content)} bytes)")
+        for file in attachment_files:
+            if file and file.filename:
+                unique_filename, original_filename, file_size, file_content = save_file(file)
+                if unique_filename and file_size > 0:
+                    attachment = Attachment()
+                    attachment.filename = unique_filename
+                    attachment.original_filename = original_filename
+                    attachment.file_size = file_size
+                    attachment.file_content = file_content
+                    attachment.request_id = request_obj.id
+                    attachment.uploaded_by_id = current_user.id
+                    db.session.add(attachment)
+                    uploaded_files.append(original_filename)
+                    app.logger.info(f"Anexo salvo: {original_filename} ({file_size} bytes)")
         
         db.session.commit()
         
@@ -333,35 +329,24 @@ def edit_request(id):
         
         # Handle attachments
         attachment_files = request.files.getlist('attachments')
-        app.logger.debug(f"Files found in edit request: {[f.filename for f in attachment_files]}")
+        app.logger.info(f"Arquivos recebidos na edicao: {[f.filename for f in attachment_files]}")
         uploaded_files = []
         allowed_extensions = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'}
         for file in attachment_files:
             if file and file.filename:
-                # Se o arquivo estiver vazio, ignorar
-                file.seek(0, os.SEEK_END)
-                size = file.tell()
-                file.seek(0)
-                if size == 0:
-                    continue
-                    
-                try:
-                    unique_filename, original_filename, file_size, file_content = save_file(file)
-                    if unique_filename:
-                        attachment = Attachment(
-                            filename=unique_filename,
-                            original_filename=original_filename,
-                            file_size=file_size,
-                            file_content=file_content,
-                            request_id=request_obj.id,
-                            uploaded_by_id=current_user.id
-                        )
-                        db.session.add(attachment)
-                        uploaded_files.append(original_filename)
-                        app.logger.info(f"Salvo no banco: {original_filename} ({len(file_content)} bytes)")
-                except Exception as e:
-                    app.logger.error(f"Erro ao processar anexo {file.filename}: {e}")
-                    flash(f"Erro ao processar o arquivo {file.filename}.", "danger")
+                unique_filename, original_filename, file_size, file_content = save_file(file)
+                if unique_filename and file_size > 0:
+                    attachment = Attachment(
+                        filename=unique_filename,
+                        original_filename=original_filename,
+                        file_size=file_size,
+                        file_content=file_content,
+                        request_id=request_obj.id,
+                        uploaded_by_id=current_user.id
+                    )
+                    db.session.add(attachment)
+                    uploaded_files.append(original_filename)
+                    app.logger.info(f"Anexo salvo na edicao: {original_filename} ({file_size} bytes)")
         
         try:
             db.session.commit()

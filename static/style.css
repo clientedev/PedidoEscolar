@@ -178,12 +178,6 @@
     }
 }
 
-    
-    .timeline-item:not(:last-child)::before {
-        left: 0.125rem;
-    }
-}
-
 /* Print styles */
 @media print {
     .navbar,

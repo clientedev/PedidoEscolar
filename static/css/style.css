@@ -1,0 +1,83 @@
+:root {
+    --primary-color: #0d6efd;
+    --border-radius: 12px;
+}
+
+body {
+    background-color: #121212;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.card {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.navbar {
+    backdrop-filter: blur(10px);
+    background-color: rgba(13, 110, 253, 0.9) !important;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+.table-responsive {
+    border-radius: var(--border-radius);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .btn-group-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .table td, .table th {
+        padding: 0.75rem;
+    }
+    
+    .dropdown-menu {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+.x-small {
+    font-size: 0.75rem;
+}
+
+.shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.badge {
+    padding: 0.4em 0.8em;
+    font-weight: 500;
+}
+
+input.form-control, select.form-select, textarea.form-control {
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+}
+
+/* Form touch targets */
+@media (pointer: coarse) {
+    .btn, .nav-link, .dropdown-item {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+}

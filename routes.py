@@ -255,6 +255,13 @@ def new_request():
         if attachment_files:
             for file in attachment_files:
                 if file and file.filename:
+                    # Se o arquivo estiver vazio, ignorar
+                    file.seek(0, os.SEEK_END)
+                    size = file.tell()
+                    file.seek(0)
+                    if size == 0:
+                        continue
+                        
                     unique_filename, original_filename, file_size, file_content = save_file(file)
                     if unique_filename:
                         attachment = Attachment()
@@ -331,6 +338,13 @@ def edit_request(id):
         allowed_extensions = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'}
         for file in attachment_files:
             if file and file.filename:
+                # Se o arquivo estiver vazio, ignorar
+                file.seek(0, os.SEEK_END)
+                size = file.tell()
+                file.seek(0)
+                if size == 0:
+                    continue
+                    
                 try:
                     unique_filename, original_filename, file_size, file_content = save_file(file)
                     if unique_filename:

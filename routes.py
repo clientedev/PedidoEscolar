@@ -337,27 +337,27 @@ def edit_request(id):
         
         # Handle attachments
         try:
+            # Check if there are actually files being uploaded
             attachment_files = request.files.getlist('attachments')
             app.logger.info(f"Arquivos recebidos na edicao: {len(attachment_files)}")
             
             for file in attachment_files:
-                if not (file and file.filename):
+                # Verificação rigorosa se o arquivo existe e tem nome
+                if not file or not file.filename or file.filename == '':
                     continue
                 
-                # Check for empty files before processing
+                # Check for empty files
                 file.seek(0, os.SEEK_END)
                 size = file.tell()
                 file.seek(0)
                 
                 if size == 0:
-                    app.logger.info(f"Ignorando arquivo vazio: {file.filename}")
                     continue
                 
                 filename = secure_filename(file.filename)
                 name, ext = os.path.splitext(filename)
                 unique_filename = f"{name}_{secrets.token_hex(8)}{ext}"
                 
-                # Read content safely
                 file_content = file.read()
                 
                 attachment = Attachment(
@@ -370,27 +370,19 @@ def edit_request(id):
                 )
                 db.session.add(attachment)
                 
-                # Save backup (optional, don't let it crash the main flow)
-                try:
-                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                    with open(file_path, 'wb') as f:
-                        f.write(file_content)
-                except:
-                    pass
-                    
-                app.logger.info(f"Anexo adicionado com sucesso: {filename} ({size} bytes)")
+                app.logger.info(f"Anexo adicionado: {filename}")
         except Exception as e:
-            app.logger.error(f"Erro processando anexos na edicao: {e}")
-            flash('Aviso: Alguns anexos podem não ter sido salvos corretamente.', 'warning')
+            app.logger.error(f"Erro nos anexos: {e}")
+            # Non-blocking error for attachments
         
         try:
             db.session.commit()
-            flash(f'Pedido "{request_obj.title}" atualizado com sucesso!', 'success')
+            flash(f'Pedido "{request_obj.title}" atualizado!', 'success')
             return redirect(url_for('view_request', id=id))
         except Exception as e:
             db.session.rollback()
-            app.logger.error(f"Erro fatal ao salvar pedido {id}: {e}")
-            flash('Erro crítico ao salvar no banco de dados.', 'danger')
+            app.logger.error(f"Erro ao salvar: {e}")
+            flash('Erro ao salvar no banco.', 'danger')
             return render_template('request_form.html', form=form, request_obj=request_obj, title='Editar Pedido')
     
     if request.method == 'GET':

@@ -164,7 +164,7 @@ def login():
                 login_user(user)
                 return redirect(url_for('first_password'))
             # Normal password authentication
-            elif user.password_hash and check_password_hash(user.password_hash, form.password.data):
+            elif user.password_hash and check_password_hash(user.password_hash, form.password.data or ''):
                 if not user.is_active:
                     flash('Sua conta está desativada. Entre em contato com o administrador.', 'danger')
                     return redirect(url_for('login'))
@@ -196,7 +196,7 @@ def first_password():
     
     form = FirstPasswordForm()
     if form.validate_on_submit():
-        current_user.password_hash = generate_password_hash(form.new_password.data)
+        current_user.password_hash = generate_password_hash(form.new_password.data or '')
         current_user.needs_password_reset = False
         db.session.commit()
         flash('Sua senha foi definida com sucesso!', 'success')

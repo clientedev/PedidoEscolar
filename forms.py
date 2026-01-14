@@ -48,7 +48,7 @@ class AcquisitionRequestForm(FlaskForm):
         # Populate responsible choices with active users
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
-        ]
+        ] # type: ignore
         # Set default date to today if not already set
         if not self.request_date.data:
             from datetime import date
@@ -86,9 +86,10 @@ class EditRequestForm(FlaskForm):
         self.impact.choices = AcquisitionRequest.IMPACT_CHOICES
         self.classe.choices = AcquisitionRequest.CLASSE_CHOICES
         # Categoria fields are now checkboxes, no choices needed
+        # Populate responsible choices with active users
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
-        ]
+        ] # type: ignore
 
 class UserForm(FlaskForm):
     username = StringField('Usuário', validators=[DataRequired(), Length(min=4, max=64)])
@@ -136,12 +137,12 @@ class SearchForm(FlaskForm):
     
     def __init__(self, *args, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
-        self.status_filter.choices = [('', 'Todos os status')] + AcquisitionRequest.STATUS_CHOICES
-        self.classe_filter.choices = [('', 'Todas as classes')] + AcquisitionRequest.CLASSE_CHOICES
-        self.categoria_filter.choices = [('', 'Todas as categorias')] + AcquisitionRequest.CATEGORIA_CHOICES
+        self.status_filter.choices = [('', 'Todos os status')] + AcquisitionRequest.STATUS_CHOICES # type: ignore
+        self.classe_filter.choices = [('', 'Todas as classes')] + AcquisitionRequest.CLASSE_CHOICES # type: ignore
+        self.categoria_filter.choices = [('', 'Todas as categorias')] + AcquisitionRequest.CATEGORIA_CHOICES # type: ignore
         self.responsible_filter.choices = [(0, 'Todos os responsáveis')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
-        ]
+        ] # type: ignore
 
 class BulkImportForm(FlaskForm):
     excel_file = FileField('Arquivo Excel', validators=[

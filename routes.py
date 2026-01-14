@@ -337,15 +337,16 @@ def edit_request(id):
         
         # Handle attachments
         try:
-            # Check if there are actually new files being uploaded
-            if 'attachments' in request.files:
-                attachment_files = request.files.getlist('attachments')
+            # Get the list of files from the form field
+            attachment_files = form.attachments.data
+            
+            if attachment_files:
                 for file in attachment_files:
-                    # IGNORAR se for o arquivo que já existe ou se estiver vazio
+                    # Check if file has a filename and is not empty
                     if not file or not file.filename or file.filename == '':
                         continue
                     
-                    # Verificação de tamanho para evitar re-salvamento de arquivos fantasmas
+                    # Verificação de tamanho
                     file.seek(0, os.SEEK_END)
                     size = file.tell()
                     file.seek(0)

@@ -337,43 +337,40 @@ def edit_request(id):
         
         # Handle attachments
         try:
-            # Check if there are actually files being uploaded
-            attachment_files = request.files.getlist('attachments')
-            app.logger.info(f"Arquivos recebidos na edicao: {len(attachment_files)}")
-            
-            for file in attachment_files:
-                # Verificação rigorosa se o arquivo existe e tem nome
-                if not file or not file.filename or file.filename == '':
-                    continue
-                
-                # Check for empty files
-                file.seek(0, os.SEEK_END)
-                size = file.tell()
-                file.seek(0)
-                
-                if size == 0:
-                    continue
-                
-                filename = secure_filename(file.filename)
-                name, ext = os.path.splitext(filename)
-                unique_filename = f"{name}_{secrets.token_hex(8)}{ext}"
-                
-                file_content = file.read()
-                
-                attachment = Attachment(
-                    filename=unique_filename,
-                    original_filename=filename,
-                    file_size=size,
-                    file_content=file_content,
-                    request_id=request_obj.id,
-                    uploaded_by_id=current_user.id
-                )
-                db.session.add(attachment)
-                
-                app.logger.info(f"Anexo adicionado: {filename}")
+            # Check if there are actually new files being uploaded
+            if 'attachments' in request.files:
+                attachment_files = request.files.getlist('attachments')
+                for file in attachment_files:
+                    # IGNORAR se for o arquivo que já existe ou se estiver vazio
+                    if not file or not file.filename or file.filename == '':
+                        continue
+                    
+                    # Verificação de tamanho para evitar re-salvamento de arquivos fantasmas
+                    file.seek(0, os.SEEK_END)
+                    size = file.tell()
+                    file.seek(0)
+                    
+                    if size == 0:
+                        continue
+                    
+                    filename = secure_filename(file.filename)
+                    name, ext = os.path.splitext(filename)
+                    unique_filename = f"{name}_{secrets.token_hex(8)}{ext}"
+                    
+                    file_content = file.read()
+                    
+                    attachment = Attachment(
+                        filename=unique_filename,
+                        original_filename=filename,
+                        file_size=size,
+                        file_content=file_content,
+                        request_id=request_obj.id,
+                        uploaded_by_id=current_user.id
+                    )
+                    db.session.add(attachment)
+                    app.logger.info(f"Novo anexo adicionado: {filename}")
         except Exception as e:
             app.logger.error(f"Erro nos anexos: {e}")
-            # Non-blocking error for attachments
         
         try:
             db.session.commit()
@@ -431,9 +428,9 @@ def download_attachment(id):
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-@app.route('/attachment/<int:id>/delete', methods=['POST'])
+@app.route('/attachment/<int:id>/delete_old', methods=['POST'])
 @login_required
-def delete_attachment(id):
+def delete_attachment_old(id):
     attachment = Attachment.query.get_or_404(id)
     request_obj = attachment.request
     
@@ -451,7 +448,7 @@ def delete_attachment(id):
     db.session.commit()
     
     flash(f'Anexo "{attachment.original_filename}" removido com sucesso.', 'success')
-    return redirect(url_for('view_request', id=request_obj.id))
+    return redirect(url_for('edit_request', id=request_obj.id))
 
 @app.route('/admin')
 @login_required

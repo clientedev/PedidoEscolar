@@ -157,7 +157,7 @@
                     </div>
                     
                     <!-- Show existing attachments for edit form -->
-                    {% if request_obj and request_obj.attachments.count() > 0 %}
+                    {% if request_obj and request_obj.attachments %}
                     <div class="row mb-4">
                         <div class="col-12">
                             <label class="form-label">Anexos Existentes</label>
@@ -176,7 +176,7 @@
                                     <form method="POST" action="{{ url_for('delete_attachment', id=attachment.id) }}" 
                                           class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este anexo?')">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="fas fa-trash"></i> Excluir
                                         </button>
                                     </form>
                                 </div>

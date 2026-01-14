@@ -149,8 +149,8 @@
                     <tbody>
                         {% for request in requests %}
                         <tr>
-                            <td>#{{ request.id }}</td>
-                            <td>
+                            <td data-label="ID">#{{ request.id }}</td>
+                            <td data-label="Título">
                                 <a href="{{ url_for('view_request', id=request.id) }}" class="text-decoration-none">
                                     {{ request.title }}
                                 </a>
@@ -158,7 +158,7 @@
                                     <i class="fas fa-paperclip text-muted ms-1" title="{{ request.attachments.count() }} anexo(s)"></i>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td data-label="Status">
                                 {% set status_classes = {
                                     'aberto': 'info',
                                     'em_cotacao': 'warning',
@@ -171,12 +171,12 @@
                                     {{ request.get_status_display() }}
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="Prioridade">
                                 <span class="badge bg-secondary text-white">
                                     {{ request.get_priority_display() }}
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="Classe">
                                 {% set classe_classes = {
                                     'ensino': 'info',
                                     'manutencao': 'secondary'
@@ -189,7 +189,7 @@
                                     {{ classe_names.get(request.classe, request.classe) }}
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="Categoria">
                                 {% set categoria_classes = {
                                     'material': 'success',
                                     'servico': 'warning'
@@ -202,34 +202,34 @@
                                     {{ categoria_names.get(request.categoria, request.categoria) }}
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="Valor Estimado">
                                 {% if request.estimated_value %}
                                     <span class="text-success fw-bold">R$ {{ "%.2f"|format(request.estimated_value) }}</span>
                                 {% else %}
                                     <span class="text-muted">Não informado</span>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td data-label="Valor Final">
                                 {% if request.final_value %}
                                     <span class="text-warning fw-bold">R$ {{ "%.2f"|format(request.final_value) }}</span>
                                 {% else %}
                                     <span class="text-muted">Não informado</span>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td data-label="Responsável">
                                 {% if request.responsible %}
                                     {{ request.responsible.full_name }}
                                 {% else %}
                                     <span class="text-muted">Não definido</span>
                                 {% endif %}
                             </td>
-                            <td>{{ request.creator.full_name }}</td>
-                            <td>
+                            <td data-label="Criado por">{{ request.creator.full_name }}</td>
+                            <td data-label="Data Solicitação">
                                 <small class="text-muted">
                                     {{ request.request_date.strftime('%d/%m/%Y') }}
                                 </small>
                             </td>
-                            <td>
+                            <td data-label="Ações">
                                 <div class="btn-group" role="group">
                                     <a href="{{ url_for('view_request', id=request.id) }}" class="btn btn-sm btn-outline-primary" title="Ver detalhes">
                                         <i class="fas fa-eye"></i>

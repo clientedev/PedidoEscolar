@@ -13,10 +13,10 @@
             <i class="fas fa-upload me-1"></i>Importar em Lote
         </a>
         <div class="btn-group">
-            <a href="{{ url_for('generate_filtered_pdf', search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
+            <a href="{{ url_for('generate_filtered_pdf', search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
                 <i class="fas fa-file-pdf me-1"></i>Relatório PDF
             </a>
-            <a href="{{ url_for('export_excel_filtered', search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
+            <a href="{{ url_for('export_excel_filtered', search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
                 <i class="fas fa-file-excel me-1"></i>Relatório Excel
             </a>
         </div>
@@ -79,6 +79,20 @@
                     {{ search_form.status_filter(class="form-select") }}
                 </div>
                 <div class="col-md-2">
+                    {{ search_form.priority_filter.label(class="form-label") }}
+                    {{ search_form.priority_filter(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.impact_filter.label(class="form-label") }}
+                    {{ search_form.impact_filter(class="form-select") }}
+                </div>
+                <div class="col-md-3">
+                    {{ search_form.responsible_filter.label(class="form-label") }}
+                    {{ search_form.responsible_filter(class="form-select") }}
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-2">
                     {{ search_form.classe_filter.label(class="form-label") }}
                     {{ search_form.classe_filter(class="form-select") }}
                 </div>
@@ -86,12 +100,6 @@
                     {{ search_form.categoria_filter.label(class="form-label") }}
                     {{ search_form.categoria_filter(class="form-select") }}
                 </div>
-                <div class="col-md-2">
-                    {{ search_form.responsible_filter.label(class="form-label") }}
-                    {{ search_form.responsible_filter(class="form-select") }}
-                </div>
-            </div>
-            <div class="row g-3">
                 <div class="col-md-2">
                     {{ search_form.date_from.label(class="form-label") }}
                     {{ search_form.date_from(class="form-control") }}
@@ -255,7 +263,7 @@
                 <ul class="pagination justify-content-center">
                     {% if pagination.has_prev %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('dashboard', page=pagination.prev_num, search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
+                        <a class="page-link" href="{{ url_for('dashboard', page=pagination.prev_num, search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
                             <i class="fas fa-chevron-left"></i> Anterior
                         </a>
                     </li>
@@ -269,7 +277,7 @@
                         {% if page_num %}
                             {% if page_num != pagination.page %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('dashboard', page=page_num, search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">{{ page_num }}</a>
+                                <a class="page-link" href="{{ url_for('dashboard', page=page_num, search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">{{ page_num }}</a>
                             </li>
                             {% else %}
                             <li class="page-item active">
@@ -285,7 +293,7 @@
                     
                     {% if pagination.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('dashboard', page=pagination.next_num, search=current_search, status_filter=current_status_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
+                        <a class="page-link" href="{{ url_for('dashboard', page=pagination.next_num, search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
                             Próxima <i class="fas fa-chevron-right"></i>
                         </a>
                     </li>

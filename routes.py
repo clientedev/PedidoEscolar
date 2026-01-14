@@ -38,6 +38,8 @@ def dashboard():
     search_form = SearchForm()
     search = request.args.get('search', '')
     status_filter = request.args.get('status_filter', '')
+    priority_filter = request.args.get('priority_filter', '')
+    impact_filter = request.args.get('impact_filter', '')
     classe_filter = request.args.get('classe_filter', '')
     categoria_filter = request.args.get('categoria_filter', '')
     responsible_filter = request.args.get('responsible_filter', 0, type=int)
@@ -55,6 +57,12 @@ def dashboard():
     
     if status_filter:
         query = query.filter(AcquisitionRequest.status == status_filter)
+
+    if priority_filter:
+        query = query.filter(AcquisitionRequest.priority == priority_filter)
+
+    if impact_filter:
+        query = query.filter(AcquisitionRequest.impact == impact_filter)
         
     if classe_filter:
         query = query.filter(AcquisitionRequest.classe == classe_filter)
@@ -100,6 +108,8 @@ def dashboard():
     # Set form defaults from URL parameters
     search_form.search.data = search
     search_form.status_filter.data = status_filter
+    search_form.priority_filter.data = priority_filter
+    search_form.impact_filter.data = impact_filter
     search_form.classe_filter.data = classe_filter
     search_form.categoria_filter.data = categoria_filter
     search_form.responsible_filter.data = responsible_filter
@@ -129,6 +139,8 @@ def dashboard():
                          total_final=total_final,
                          current_search=search,
                          current_status_filter=status_filter,
+                         current_priority_filter=priority_filter,
+                         current_impact_filter=impact_filter,
                          current_classe_filter=classe_filter,
                          current_categoria_filter=categoria_filter,
                          current_responsible_filter=responsible_filter,

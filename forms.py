@@ -127,6 +127,8 @@ class FirstPasswordForm(FlaskForm):
 class SearchForm(FlaskForm):
     search = StringField('Buscar', validators=[Optional(), Length(max=100)])
     status_filter = SelectField('Filtrar por Status', validators=[Optional()])
+    priority_filter = SelectField('Filtrar por Prioridade', validators=[Optional()])
+    impact_filter = SelectField('Filtrar por Impacto', validators=[Optional()])
     classe_filter = SelectField('Filtrar por Classe', validators=[Optional()])
     categoria_filter = SelectField('Filtrar por Categoria', validators=[Optional()])
     responsible_filter = SelectField('Filtrar por Responsável', coerce=int, validators=[Optional()])
@@ -137,6 +139,8 @@ class SearchForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
         self.status_filter.choices = [('', 'Todos os status')] + AcquisitionRequest.STATUS_CHOICES
+        self.priority_filter.choices = [('', 'Todas as prioridades')] + AcquisitionRequest.PRIORITY_CHOICES
+        self.impact_filter.choices = [('', 'Todos os impactos')] + AcquisitionRequest.IMPACT_CHOICES
         self.classe_filter.choices = [('', 'Todas as classes')] + AcquisitionRequest.CLASSE_CHOICES
         self.categoria_filter.choices = [('', 'Todas as categorias')] + AcquisitionRequest.CATEGORIA_CHOICES
         self.responsible_filter.choices = [(0, 'Todos os responsáveis')] + [

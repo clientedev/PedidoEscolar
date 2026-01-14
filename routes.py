@@ -341,36 +341,44 @@ def edit_request(id):
             app.logger.info(f"Arquivos recebidos na edicao: {len(attachment_files)}")
             
             for file in attachment_files:
-                if file and file.filename:
-                    filename = secure_filename(file.filename)
-                    name, ext = os.path.splitext(filename)
-                    unique_filename = f"{name}_{secrets.token_hex(8)}{ext}"
+                if not (file and file.filename):
+                    continue
+                
+                # Check for empty files before processing
+                file.seek(0, os.SEEK_END)
+                size = file.tell()
+                file.seek(0)
+                
+                if size == 0:
+                    app.logger.info(f"Ignorando arquivo vazio: {file.filename}")
+                    continue
+                
+                filename = secure_filename(file.filename)
+                name, ext = os.path.splitext(filename)
+                unique_filename = f"{name}_{secrets.token_hex(8)}{ext}"
+                
+                # Read content safely
+                file_content = file.read()
+                
+                attachment = Attachment(
+                    filename=unique_filename,
+                    original_filename=filename,
+                    file_size=size,
+                    file_content=file_content,
+                    request_id=request_obj.id,
+                    uploaded_by_id=current_user.id
+                )
+                db.session.add(attachment)
+                
+                # Save backup (optional, don't let it crash the main flow)
+                try:
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                    with open(file_path, 'wb') as f:
+                        f.write(file_content)
+                except:
+                    pass
                     
-                    # Reset pointer and read
-                    file.seek(0)
-                    file_content = file.read()
-                    file_size = len(file_content)
-                    
-                    if file_size > 0:
-                        attachment = Attachment(
-                            filename=unique_filename,
-                            original_filename=filename,
-                            file_size=file_size,
-                            file_content=file_content,
-                            request_id=request_obj.id,
-                            uploaded_by_id=current_user.id
-                        )
-                        db.session.add(attachment)
-                        
-                        # Save backup
-                        try:
-                            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                            with open(file_path, 'wb') as f:
-                                f.write(file_content)
-                        except Exception as disk_e:
-                            app.logger.error(f"Erro ao salvar backup em disco: {disk_e}")
-                            
-                        app.logger.info(f"Anexo adicionado: {filename} ({file_size} bytes)")
+                app.logger.info(f"Anexo adicionado com sucesso: {filename} ({size} bytes)")
         except Exception as e:
             app.logger.error(f"Erro processando anexos na edicao: {e}")
             flash('Aviso: Alguns anexos podem não ter sido salvos corretamente.', 'warning')

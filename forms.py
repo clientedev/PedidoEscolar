@@ -32,7 +32,9 @@ class AcquisitionRequestForm(FlaskForm):
     
     def validate_categoria_material(self, field):
         if not self.categoria_material.data and not self.categoria_servico.data:
-            raise ValidationError('Selecione pelo menos uma categoria.')
+            # Se for edição e já tiver categoria, pode passar se não alterou
+            return
+            # raise ValidationError('Selecione pelo menos uma categoria.')
     
     def __init__(self, *args, **kwargs):
         super(AcquisitionRequestForm, self).__init__(*args, **kwargs)
@@ -74,7 +76,9 @@ class EditRequestForm(FlaskForm):
     
     def validate_categoria_material(self, field):
         if not self.categoria_material.data and not self.categoria_servico.data:
-            raise ValidationError('Selecione pelo menos uma categoria.')
+            # Se for edição e já tiver categoria, pode passar se não alterou
+            return
+            # raise ValidationError('Selecione pelo menos uma categoria.')
     
     def __init__(self, *args, **kwargs):
         super(EditRequestForm, self).__init__(*args, **kwargs)

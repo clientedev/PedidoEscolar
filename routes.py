@@ -349,9 +349,15 @@ def edit_request(id):
                     uploaded_files.append(original_filename)
                     app.logger.info(f"Salvo no banco: {original_filename} ({len(file_content)} bytes)")
         
-        db.session.commit()
-        flash(f'Pedido "{request_obj.title}" atualizado com sucesso!', 'success')
-        return redirect(url_for('view_request', id=id))
+        try:
+            db.session.commit()
+            flash(f'Pedido "{request_obj.title}" atualizado com sucesso!', 'success')
+            return redirect(url_for('view_request', id=id))
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error updating request {id}: {e}")
+            flash('Erro ao atualizar o pedido. Tente novamente.', 'danger')
+            return render_template('request_form.html', form=form, request_obj=request_obj, title='Editar Pedido')
     
     if request.method == 'GET':
         form.title.data = request_obj.title

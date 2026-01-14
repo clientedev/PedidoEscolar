@@ -72,12 +72,12 @@ Escola SENAI "Morvan Figueiredo"
                                 <small class="text-muted">{{ current_user.email }}</small>
                             </span></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li id="install-item" style="display: none;">
+                            <li id="install-item">
                                 <a class="dropdown-item" href="#" id="install-button">
                                     <i class="fas fa-download me-1"></i>Instalar App
                                 </a>
-                                <hr class="dropdown-divider">
                             </li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('logout') }}">
                                 <i class="fas fa-sign-out-alt me-1"></i>Sair
                             </a></li>
@@ -139,22 +139,35 @@ Escola SENAI "Morvan Figueiredo"
         const installItem = document.getElementById('install-item');
         const installBtn = document.getElementById('install-button');
 
+        // Check if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            installItem.style.display = 'none';
+        }
+
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             installItem.style.display = 'block';
         });
 
+        window.addEventListener('appinstalled', (evt) => {
+            installItem.style.display = 'none';
+            console.log('App was installed');
+        });
+
         installBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            installItem.style.display = 'none';
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted install');
-                }
-                deferredPrompt = null;
-            });
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted install');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                alert('O aplicativo já está instalado ou seu navegador não suporta a instalação direta. No Chrome/Edge, você pode instalar através do ícone na barra de endereços.');
+            }
         });
     </script>
     

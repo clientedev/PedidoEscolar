@@ -35,25 +35,33 @@
                 <h4 class="card-title">{{ request_obj.title }}</h4>
                 
                 <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <strong>Status:</strong>
                         {% set status_classes = {
-                            'orcamento': 'warning',
-                            'fase_compra': 'info',
-                            'a_caminho': 'primary',
-                            'finalizado': 'success'
-                        } %}
-                        {% set status_names = {
-                            'orcamento': 'Orçamento',
-                            'fase_compra': 'Fase de Compra',
-                            'a_caminho': 'A Caminho',
-                            'finalizado': 'Finalizado'
+                            'aberto': 'info',
+                            'em_cotacao': 'warning',
+                            'aprovado': 'primary',
+                            'pedido_emitido': 'success',
+                            'recebido': 'dark',
+                            'cancelado': 'danger'
                         } %}
                         <span class="badge bg-{{ status_classes.get(request_obj.status, 'secondary') }} text-white ms-2">
-                            {{ status_names.get(request_obj.status, request_obj.status) }}
+                            {{ request_obj.get_status_display() }}
                         </span>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
+                        <strong>Prioridade:</strong>
+                        <span class="badge bg-secondary text-white ms-2">
+                            {{ request_obj.get_priority_display() }}
+                        </span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Impacto:</strong>
+                        <span class="badge bg-secondary text-white ms-2">
+                            {{ request_obj.get_impact_display() }}
+                        </span>
+                    </div>
+                    <div class="col-md-3">
                         <strong>Criado por:</strong> {{ request_obj.creator.full_name }}
                     </div>
                 </div>

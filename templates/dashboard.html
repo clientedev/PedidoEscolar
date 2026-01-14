@@ -127,6 +127,7 @@
                             <th style="min-width: 60px;">ID</th>
                             <th style="min-width: 200px;">Título</th>
                             <th style="min-width: 120px;">Status</th>
+                            <th style="min-width: 100px;">Prioridade</th>
                             <th style="min-width: 100px;">Classe</th>
                             <th style="min-width: 100px;">Categoria</th>
                             <th style="min-width: 120px;">Valor Estimado</th>
@@ -151,19 +152,20 @@
                             </td>
                             <td>
                                 {% set status_classes = {
-                                    'orcamento': 'warning',
-                                    'fase_compra': 'info',
-                                    'a_caminho': 'primary',
-                                    'finalizado': 'success'
-                                } %}
-                                {% set status_names = {
-                                    'orcamento': 'Orçamento',
-                                    'fase_compra': 'Fase de Compra',
-                                    'a_caminho': 'A Caminho',
-                                    'finalizado': 'Finalizado'
+                                    'aberto': 'info',
+                                    'em_cotacao': 'warning',
+                                    'aprovado': 'primary',
+                                    'pedido_emitido': 'success',
+                                    'recebido': 'dark',
+                                    'cancelado': 'danger'
                                 } %}
                                 <span class="badge bg-{{ status_classes.get(request.status, 'secondary') }} text-white">
-                                    {{ status_names.get(request.status, request.status) }}
+                                    {{ request.get_status_display() }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary text-white">
+                                    {{ request.get_priority_display() }}
                                 </span>
                             </td>
                             <td>

@@ -202,6 +202,8 @@ def new_request():
         request_obj.title = form.title.data
         request_obj.description = form.description.data
         request_obj.status = form.status.data
+        request_obj.priority = form.priority.data
+        request_obj.impact = form.impact.data
         request_obj.classe = form.classe.data
         
         # Process categoria checkboxes
@@ -277,6 +279,8 @@ def edit_request(id):
         request_obj.title = form.title.data
         request_obj.description = form.description.data
         request_obj.status = form.status.data
+        request_obj.priority = form.priority.data
+        request_obj.impact = form.impact.data
         request_obj.classe = form.classe.data
         
         # Process categoria checkboxes

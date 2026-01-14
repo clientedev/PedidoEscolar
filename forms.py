@@ -14,6 +14,8 @@ class AcquisitionRequestForm(FlaskForm):
     title = StringField('Título', validators=[DataRequired(), Length(min=5, max=200)])
     description = TextAreaField('Descrição', validators=[DataRequired(), Length(min=10, max=1000)])
     status = SelectField('Status', validators=[DataRequired()])
+    priority = SelectField('Prioridade', validators=[DataRequired()])
+    impact = SelectField('Impacto', validators=[DataRequired()])
     classe = SelectField('Classe', validators=[DataRequired()])
     categoria_material = BooleanField('Material')
     categoria_servico = BooleanField('Serviço')
@@ -36,6 +38,10 @@ class AcquisitionRequestForm(FlaskForm):
         super(AcquisitionRequestForm, self).__init__(*args, **kwargs)
         # Populate status choices
         self.status.choices = AcquisitionRequest.STATUS_CHOICES
+        # Populate priority choices
+        self.priority.choices = AcquisitionRequest.PRIORITY_CHOICES
+        # Populate impact choices
+        self.impact.choices = AcquisitionRequest.IMPACT_CHOICES
         # Populate classe choices
         self.classe.choices = AcquisitionRequest.CLASSE_CHOICES
         # Categoria fields are now checkboxes, no choices needed
@@ -52,6 +58,8 @@ class EditRequestForm(FlaskForm):
     title = StringField('Título', validators=[DataRequired(), Length(min=5, max=200)])
     description = TextAreaField('Descrição', validators=[DataRequired(), Length(min=10, max=1000)])
     status = SelectField('Status', validators=[DataRequired()])
+    priority = SelectField('Prioridade', validators=[DataRequired()])
+    impact = SelectField('Impacto', validators=[DataRequired()])
     classe = SelectField('Classe', validators=[DataRequired()])
     categoria_material = BooleanField('Material')
     categoria_servico = BooleanField('Serviço')
@@ -74,6 +82,8 @@ class EditRequestForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(EditRequestForm, self).__init__(*args, **kwargs)
         self.status.choices = AcquisitionRequest.STATUS_CHOICES
+        self.priority.choices = AcquisitionRequest.PRIORITY_CHOICES
+        self.impact.choices = AcquisitionRequest.IMPACT_CHOICES
         self.classe.choices = AcquisitionRequest.CLASSE_CHOICES
         # Categoria fields are now checkboxes, no choices needed
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [

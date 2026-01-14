@@ -245,8 +245,9 @@ def new_request():
         
         # Handle file uploads
         uploaded_files = []
-        attachment_data = form.attachments.data or []
-        for file in attachment_data:
+        # Access files via request.files when form.validate_on_submit() is true
+        files = request.files.getlist(form.attachments.name)
+        for file in files:
             if file and file.filename:
                 unique_filename, original_filename, file_size = save_file(file)
                 if unique_filename:
@@ -321,8 +322,8 @@ def edit_request(id):
         
         # Handle new file uploads
         uploaded_files = []
-        attachment_data = form.attachments.data or []
-        for file in attachment_data:
+        files = request.files.getlist(form.attachments.name)
+        for file in files:
             if file and file.filename:
                 unique_filename, original_filename, file_size = save_file(file)
                 if unique_filename:

@@ -173,12 +173,22 @@
                                             ({{ "%.1f"|format(attachment.file_size / 1024) }} KB)
                                         </small>
                                     </div>
-                                    <form method="POST" action="{{ url_for('delete_attachment', id=attachment.id) }}" 
-                                          class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este anexo?')">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-trash"></i> Excluir
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            onclick="if(confirm('Tem certeza que deseja excluir este anexo?')) { 
+                                                const form = document.createElement('form');
+                                                form.method = 'POST';
+                                                form.action = '{{ url_for('delete_attachment', id=attachment.id) }}';
+                                                const csrfToken = document.querySelector('input[name=\"csrf_token\"]').value;
+                                                const csrfInput = document.createElement('input');
+                                                csrfInput.type = 'hidden';
+                                                csrfInput.name = 'csrf_token';
+                                                csrfInput.value = csrfToken;
+                                                form.appendChild(csrfInput);
+                                                document.body.appendChild(form);
+                                                form.submit();
+                                            }">
+                                        <i class="fas fa-trash"></i> Excluir
+                                    </button>
                                 </div>
                                 {% endfor %}
                             </div>

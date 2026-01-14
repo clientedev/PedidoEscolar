@@ -19,16 +19,21 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def save_file(file):
-    """Save uploaded file and return filename"""
+    """Save uploaded file and return filename and content"""
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         # Generate unique filename to prevent conflicts
         name, ext = os.path.splitext(filename)
         unique_filename = f"{name}_{secrets.token_hex(8)}{ext}"
+        
+        # Read content for database storage
+        file_content = file.read()
+        file.seek(0) # Reset file pointer
+        
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         file.save(file_path)
-        return unique_filename, filename, os.path.getsize(file_path)
-    return None, None, None
+        return unique_filename, filename, len(file_content), file_content
+    return None, None, None, None
 
 @app.route('/')
 @app.route('/dashboard')
@@ -250,12 +255,13 @@ def new_request():
         if attachment_files:
             for file in attachment_files:
                 if file and file.filename:
-                    unique_filename, original_filename, file_size = save_file(file)
+                    unique_filename, original_filename, file_size, file_content = save_file(file)
                     if unique_filename:
                         attachment = Attachment()
                         attachment.filename = unique_filename
                         attachment.original_filename = original_filename
                         attachment.file_size = file_size
+                        attachment.file_content = file_content
                         attachment.request_id = request_obj.id
                         attachment.uploaded_by_id = current_user.id
                         db.session.add(attachment)
@@ -327,12 +333,13 @@ def edit_request(id):
                 if ext not in allowed_extensions:
                     flash(f'Arquivo {file.filename} ignorado. Apenas PDF, Word, Excel e imagens são permitidos.', 'warning')
                     continue
-                unique_filename, original_filename, file_size = save_file(file)
+                unique_filename, original_filename, file_size, file_content = save_file(file)
                 if unique_filename:
                     attachment = Attachment(
                         filename=unique_filename,
                         original_filename=original_filename,
                         file_size=file_size,
+                        file_content=file_content,
                         request_id=request_obj.id,
                         uploaded_by_id=current_user.id
                     )

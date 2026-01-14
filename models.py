@@ -124,6 +124,7 @@ class Attachment(db.Model):
     filename = db.Column(db.String(255), nullable=False)
     original_filename = db.Column(db.String(255), nullable=False)
     file_size = db.Column(db.Integer)
+    file_content = db.Column(db.LargeBinary)  # Nova coluna para salvar no banco
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Foreign key

@@ -166,7 +166,7 @@
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
                                         <i class="fas fa-file me-2"></i>
-                                        <a href="{{ url_for('uploaded_file', filename=attachment.filename) }}" target="_blank">
+                                        <a href="{{ url_for('download_attachment', id=attachment.id) }}" target="_blank">
                                             {{ attachment.original_filename }}
                                         </a>
                                         <small class="text-muted ms-2">

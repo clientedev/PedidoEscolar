@@ -1,7 +1,7 @@
 import os
 import secrets
 from datetime import datetime, date
-from flask import render_template, redirect, url_for, flash, request, send_from_directory, abort, Response
+from flask import render_template, redirect, url_for, flash, request, send_from_directory, abort, Response, send_file
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -377,6 +377,22 @@ def edit_request(id):
                 flash(f"Erro no campo {getattr(form, field).label.text}: {error}", 'danger')
             
     return render_template('request_form.html', form=form, request_obj=request_obj, title='Editar Pedido')
+
+@app.route('/attachment/<int:id>/download')
+@login_required
+def download_attachment(id):
+    attachment = Attachment.query.get_or_404(id)
+    if not attachment.file_content:
+        # Fallback para sistema de arquivos se o conteúdo não estiver no banco
+        return send_from_directory(app.config['UPLOAD_FOLDER'], attachment.filename)
+    
+    from io import BytesIO
+    return send_file(
+        BytesIO(attachment.file_content),
+        mimetype='application/octet-stream',
+        as_attachment=True,
+        download_name=attachment.original_filename
+    )
 
 @app.route('/upload/<filename>')
 @login_required

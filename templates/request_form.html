@@ -4,233 +4,95 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-{{ 'edit' if request_obj else 'plus' }} me-2"></i>{{ title }}
+    <div class="col-lg-10 col-xl-8">
+        <div class="card border-0 shadow-sm overflow-hidden mb-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0 d-flex align-items-center">
+                    <i class="fas fa-{{ 'edit' if request_obj else 'plus-circle' }} me-2 fs-4"></i>
+                    {{ title }}
                 </h5>
             </div>
-            <div class="card-body">
-                <form method="POST" enctype="multipart/form-data">
+            <div class="card-body p-3 p-md-4">
+                <form method="POST" enctype="multipart/form-data" class="needs-validation">
                     {{ form.hidden_tag() }}
                     
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            {{ form.title.label(class="form-label") }}
-                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
-                            {% if form.title.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.title.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
+                    <div class="mb-3 mb-md-4">
+                        {{ form.title.label(class="form-label fw-bold") }}
+                        {{ form.title(class="form-control form-control-lg", placeholder="Título do pedido") }}
                     </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            {{ form.description.label(class="form-label") }}
-                            {{ form.description(class="form-control", rows="4") }}
-                            {% if form.description.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.description.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
+                    <div class="mb-3 mb-md-4">
+                        {{ form.description.label(class="form-label fw-bold") }}
+                        {{ form.description(class="form-control", rows="3") }}
                     </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            {% if form.status %}
-                                {{ form.status.label(class="form-label") }}
-                                {{ form.status(class="form-select") }}
-                            {% endif %}
+                    <div class="row g-2 g-md-3 mb-3 mb-md-4">
+                        <div class="col-6 col-md-4">
+                            {{ form.status.label(class="form-label fw-bold small") }}
+                            {{ form.status(class="form-select") }}
                         </div>
-                        <div class="col-md-4">
-                            {{ form.priority.label(class="form-label") }}
+                        <div class="col-6 col-md-4">
+                            {{ form.priority.label(class="form-label fw-bold small") }}
                             {{ form.priority(class="form-select") }}
                         </div>
-                        <div class="col-md-4">
-                            {{ form.impact.label(class="form-label") }}
-                            {{ form.impact(class="form-select") }}
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            {{ form.classe.label(class="form-label") }}
-                            {{ form.classe(class="form-select") }}
-                            {% if form.classe.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.classe.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Categoria *</label>
-                            <div class="form-check">
-                                {{ form.categoria_material(class="form-check-input") }}
-                                {{ form.categoria_material.label(class="form-check-label") }}
-                            </div>
-                            <div class="form-check">
-                                {{ form.categoria_servico(class="form-check-input") }}
-                                {{ form.categoria_servico.label(class="form-check-label") }}
-                            </div>
-                            <small class="text-muted">Selecione pelo menos uma categoria</small>
-                            {% if form.categoria_material.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.categoria_material.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-4">
-                            {{ form.request_date.label(class="form-label") }}
+                        <div class="col-12 col-md-4">
+                            {{ form.request_date.label(class="form-label fw-bold small") }}
                             {{ form.request_date(class="form-control") }}
-                            {% if form.request_date.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.request_date.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
                         </div>
                     </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            {{ form.estimated_value.label(class="form-label") }}
-                            {{ form.estimated_value(class="form-control", step="0.01", placeholder="0.00") }}
-                            <div class="form-text">Valor estimado para a fase de orçamento</div>
-                            {% if form.estimated_value.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.estimated_value.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
+                    <div class="row g-2 g-md-3 mb-3 mb-md-4">
+                        <div class="col-6">
+                            {{ form.estimated_value.label(class="form-label fw-bold small") }}
+                            <div class="input-group">
+                                <span class="input-group-text p-1 p-md-2">R$</span>
+                                {{ form.estimated_value(class="form-control", step="0.01") }}
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            {{ form.final_value.label(class="form-label") }}
-                            {{ form.final_value(class="form-control", step="0.01", placeholder="0.00") }}
-                            <div class="form-text">Valor final para fase de compra/entrega</div>
-                            {% if form.final_value.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.final_value.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
+                        <div class="col-6">
+                            {{ form.final_value.label(class="form-label fw-bold small") }}
+                            <div class="input-group">
+                                <span class="input-group-text p-1 p-md-2">R$</span>
+                                {{ form.final_value(class="form-control", step="0.01") }}
+                            </div>
                         </div>
                     </div>
-                    
 
-                    
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            {{ form.observations.label(class="form-label") }}
-                            {{ form.observations(class="form-control", rows="3") }}
-                            {% if form.observations.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.observations.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
+                    <div class="mb-3 mb-md-4">
+                        <label class="form-label fw-bold">Anexar Novo Arquivo</label>
+                        {{ form.attachments(class="form-control", multiple=True) }}
                     </div>
                     
-                    {% if form.change_comments %}
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            {{ form.change_comments.label(class="form-label") }}
-                            {{ form.change_comments(class="form-control", rows="2") }}
-                            <div class="form-text">Descreva as alterações realizadas (opcional)</div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            {{ form.attachments.label(class="form-label") }}
-                            {{ form.attachments(class="form-control", multiple=True) }}
-                            <div class="form-text">
-                                Formatos aceitos: PDF, Word, Excel, PNG, JPG (máx. 16MB cada)
-                            </div>
-                            {% if form.attachments.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.attachments.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Show existing attachments for edit form -->
                     {% if request_obj and request_obj.attachments %}
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <label class="form-label">Anexos Existentes</label>
-                            <div class="border rounded p-3">
-                                {% for attachment in request_obj.attachments %}
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div>
-                                        <i class="fas fa-file me-2"></i>
-                                        <a href="{{ url_for('download_attachment', id=attachment.id) }}" target="_blank">
-                                            {{ attachment.original_filename }}
-                                        </a>
-                                        <small class="text-muted ms-2">
-                                            ({{ "%.1f"|format(attachment.file_size / 1024) }} KB)
-                                        </small>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                            onclick="if(confirm('Tem certeza que deseja excluir este anexo?')) { 
-                                                const form = document.createElement('form');
-                                                form.method = 'POST';
-                                                form.action = '{{ url_for('delete_attachment', id=attachment.id) }}';
-                                                const csrfToken = document.querySelector('input[name=\"csrf_token\"]').value;
-                                                const csrfInput = document.createElement('input');
-                                                csrfInput.type = 'hidden';
-                                                csrfInput.name = 'csrf_token';
-                                                csrfInput.value = csrfToken;
-                                                form.appendChild(csrfInput);
-                                                document.body.appendChild(form);
-                                                form.submit();
-                                            }">
-                                        <i class="fas fa-trash"></i> Excluir
-                                    </button>
-                                </div>
-                                {% endfor %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Arquivos Atuais</label>
+                        <div class="list-group list-group-flush border rounded">
+                            {% for attachment in request_obj.attachments %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                                <span class="text-truncate small me-2">{{ attachment.original_filename }}</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger border-0" 
+                                        onclick="if(confirm('Excluir?')) { 
+                                            const f = document.createElement('form'); f.method = 'POST';
+                                            f.action = '{{ url_for('delete_attachment', id=attachment.id) }}';
+                                            const i = document.createElement('input'); i.type = 'hidden'; i.name = 'csrf_token';
+                                            i.value = '{{ csrf_token() }}'; f.appendChild(i);
+                                            document.body.appendChild(f); f.submit();
+                                        }">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </div>
+                            {% endfor %}
                         </div>
                     </div>
                     {% endif %}
                     
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('view_request', id=request_obj.id) if request_obj else url_for('dashboard') }}" 
-                           class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-1"></i>Cancelar
-                        </a>
-                        {{ form.submit(class="btn btn-primary", id="submit-btn") }}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-light order-2 order-md-1">Cancelar</a>
+                        {{ form.submit(class="btn btn-primary px-md-5 order-1 order-md-2") }}
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const submitBtn = document.getElementById('submit-btn');
-
-    form.addEventListener('submit', function() {
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
-        }
-    });
-
-    // Auto-resize textareas
-    const textareas = document.querySelectorAll('textarea');
-    textareas.forEach(textarea => {
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
-        });
-    });
-});
-</script>
 {% endblock %}

@@ -2,87 +2,43 @@
 <html lang="pt-BR" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Sistema de Aquisições - Escola SENAI "Morvan Figueiredo"{% endblock %}</title>
-    
-    <!-- Bootstrap CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}Aquisições - SENAI{% endblock %}</title>
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    
-    <!-- PWA Meta Tags -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#0d6efd">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
+    <style>
+        :root { --border-radius: 12px; }
+        body { background-color: #121212; font-family: 'Inter', system-ui, -apple-system, sans-serif; overflow-x: hidden; }
+        .card { border-radius: var(--border-radius); border: none; }
+        .navbar { backdrop-filter: blur(10px); background-color: rgba(13, 110, 253, 0.9) !important; padding: 0.5rem 0; }
+        .btn { border-radius: 8px; font-weight: 500; }
+        .container { max-width: 1000px; padding: 0 1rem; }
+        @media (pointer: coarse) { .btn, .nav-link, .dropdown-item { min-height: 48px; display: flex; align-items: center; } }
+        .navbar-brand { font-size: 1.1rem; font-weight: 600; }
+    </style>
 </head>
 <body>
     {% if current_user.is_authenticated %}
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm mb-3">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
-                <i class="fas fa-school me-2 fs-4"></i>
-                <span class="d-none d-sm-inline">Escola SENAI "Morvan Figueiredo"</span>
-                <span class="d-inline d-sm-none">SENAI Morvan</span>
+                <i class="fas fa-school me-2"></i>
+                <span>SENAI Morvan</span>
             </a>
-            
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto py-2 py-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('dashboard') }}">
-                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('new_request') }}">
-                            <i class="fas fa-plus me-1"></i>Novo Pedido
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-cog me-1"></i>Administração
-                        </a>
-                        <ul class="dropdown-menu border-0 shadow-sm">
-                            <li><a class="dropdown-item py-2" href="{{ url_for('admin_panel') }}">
-                                <i class="fas fa-chart-bar me-1"></i>Painel Admin
-                            </a></li>
-                            {% if current_user.is_admin %}
-                            <li><a class="dropdown-item py-2" href="{{ url_for('user_management') }}">
-                                <i class="fas fa-users me-1"></i>Gerenciar Usuários
-                            </a></li>
-                            {% endif %}
-                        </ul>
-                    </li>
+                <ul class="navbar-nav me-auto py-3 py-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('new_request') }}"><i class="fas fa-plus me-2"></i>Novo Pedido</a></li>
                 </ul>
-                
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle me-1 fs-5"></i>
-                            <span>{{ current_user.full_name }}</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><span class="dropdown-item-text">
-                                <small class="text-muted d-block">{{ current_user.email }}</small>
-                            </span></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li id="install-item" style="display: none;">
-                                <a class="dropdown-item py-2" href="#" id="install-button">
-                                    <i class="fas fa-download me-1"></i>Instalar App
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item py-2 text-danger" href="{{ url_for('logout') }}">
-                                <i class="fas fa-sign-out-alt me-1"></i>Sair
-                            </a></li>
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">{{ current_user.full_name }}</a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Sair</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -91,88 +47,21 @@
     </nav>
     {% endif %}
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="container mt-3">
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show border-0 shadow-sm" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-
-    <!-- Main Content -->
-    <main class="container my-4">
-        {% if error_message %}
-            <div class="text-center">
-                <h1 class="display-1">😔</h1>
-                <h2>{{ error_message }}</h2>
-                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
-                    <i class="fas fa-home me-1"></i>Voltar ao Dashboard
-                </a>
-            </div>
-        {% else %}
-            {% block content %}{% endblock %}
-        {% endif %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
     </main>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JS -->
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-    
-    <script>
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/static/sw.js')
-                    .then(reg => console.log('SW registered', reg))
-                    .catch(err => console.error('SW error', err));
-            });
-        }
-
-        // PWA Install Prompt
-        let deferredPrompt;
-        const installItem = document.getElementById('install-item');
-        const installBtn = document.getElementById('install-button');
-
-        // Check if already installed
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            installItem.style.display = 'none';
-        }
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installItem.style.display = 'block';
-        });
-
-        window.addEventListener('appinstalled', (evt) => {
-            installItem.style.display = 'none';
-            console.log('App was installed');
-        });
-
-        if (installBtn) installBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('User accepted install');
-                    }
-                    deferredPrompt = null;
-                });
-            } else {
-                alert('O aplicativo já está instalado ou seu navegador não suporta a instalação direta. No Chrome/Edge, você pode instalar através do ícone na barra de endereços.');
-            }
-        });
-    </script>
-    
     {% block scripts %}{% endblock %}
 </body>
 </html>

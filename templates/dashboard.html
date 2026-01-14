@@ -3,103 +3,321 @@
 {% block title %}Dashboard - {{ super() }}{% endblock %}
 
 {% block content %}
-<div class="row align-items-center mb-4 g-3">
-    <div class="col-12 col-md">
-        <h1 class="h3 mb-0 text-white"><i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard</h1>
-    </div>
-    <div class="col-12 col-md-auto d-flex gap-2 flex-wrap">
-        <a href="{{ url_for('new_request') }}" class="btn btn-primary flex-fill px-3">
-            <i class="fas fa-plus me-1"></i>Novo
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-tachometer-alt me-2"></i>Dashboard de Aquisições</h1>
+    <div class="btn-group">
+        <a href="{{ url_for('new_request') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Novo Pedido
         </a>
-        <div class="dropdown flex-fill">
-            <button class="btn btn-outline-light w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">Relatórios</button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                <li><a class="dropdown-item" href="{{ url_for('generate_filtered_pdf') }}"><i class="fas fa-file-pdf me-2 text-danger"></i>PDF</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('export_excel_filtered') }}"><i class="fas fa-file-excel me-2 text-success"></i>Excel</a></li>
-            </ul>
+        <a href="{{ url_for('bulk_import_page') }}" class="btn btn-info">
+            <i class="fas fa-upload me-1"></i>Importar em Lote
+        </a>
+        <div class="btn-group">
+            <a href="{{ url_for('generate_filtered_pdf', search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
+                <i class="fas fa-file-pdf me-1"></i>Relatório PDF
+            </a>
+            <a href="{{ url_for('export_excel_filtered', search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}" class="btn btn-success">
+                <i class="fas fa-file-excel me-1"></i>Relatório Excel
+            </a>
         </div>
     </div>
 </div>
 
-<div class="row row-cols-1 row-cols-sm-3 g-2 mb-4">
-    <div class="col">
-        <div class="card border-0 bg-dark text-white p-2">
-            <small class="text-muted opacity-75">Total de Pedidos</small>
-            <h4 class="mb-0">{{ total_requests }}</h4>
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-list fa-2x text-primary mb-2"></i>
+                <h5 class="card-title">Total de Pedidos</h5>
+                <h3 class="text-primary">{{ total_requests }}</h3>
+            </div>
         </div>
     </div>
-    <div class="col">
-        <div class="card border-0 bg-dark text-white p-2">
-            <small class="text-muted opacity-75">Estimado Total</small>
-            <h5 class="mb-0 text-success">R${{ "%.2f"|format(total_estimated) }}</h5>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                <h6 class="card-title">Valor Estimado Total</h6>
+                <h4 class="text-success">R$ {{ "%.2f"|format(total_estimated) }}</h4>
+            </div>
         </div>
     </div>
-    <div class="col">
-        <div class="card border-0 bg-dark text-white p-2">
-            <small class="text-muted opacity-75">Finalizado Total</small>
-            <h5 class="mb-0 text-warning">R${{ "%.2f"|format(total_final) }}</h5>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-dollar-sign fa-2x text-warning mb-2"></i>
+                <h6 class="card-title">Valor Final Total</h6>
+                <h4 class="text-warning">R$ {{ "%.2f"|format(total_final) }}</h4>
+            </div>
         </div>
+    </div>
+    {% for status_name, count in status_counts.items() %}
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                <h6 class="card-title">{{ status_name }}</h6>
+                <h4 class="text-info">{{ count }}</h4>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    {{ search_form.search.label(class="form-label") }}
+                    {{ search_form.search(class="form-control", placeholder="Buscar por título ou descrição...") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.status_filter.label(class="form-label") }}
+                    {{ search_form.status_filter(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.priority_filter.label(class="form-label") }}
+                    {{ search_form.priority_filter(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.impact_filter.label(class="form-label") }}
+                    {{ search_form.impact_filter(class="form-select") }}
+                </div>
+                <div class="col-md-3">
+                    {{ search_form.responsible_filter.label(class="form-label") }}
+                    {{ search_form.responsible_filter(class="form-select") }}
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-2">
+                    {{ search_form.classe_filter.label(class="form-label") }}
+                    {{ search_form.classe_filter(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.categoria_filter.label(class="form-label") }}
+                    {{ search_form.categoria_filter(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.date_from.label(class="form-label") }}
+                    {{ search_form.date_from(class="form-control") }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.date_to.label(class="form-label") }}
+                    {{ search_form.date_to(class="form-control") }}
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-secondary me-2">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
-<div class="card mb-4 border-0 bg-dark p-2">
-    <form method="GET" class="row g-2">
-        <div class="col-12 col-md-6">{{ search_form.search(class="form-control bg-secondary text-white border-0", placeholder="Buscar...") }}</div>
-        <div class="col-6 col-md-3">{{ search_form.status_filter(class="form-select bg-secondary text-white border-0") }}</div>
-        <div class="col-6 col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary flex-fill"><i class="fas fa-search"></i></button>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary"><i class="fas fa-times"></i></a>
-        </div>
-    </form>
-</div>
-
-<div class="card border-0 bg-dark overflow-hidden">
-    <div class="table-responsive">
-        <table class="table table-dark table-hover align-middle mb-0">
-            <thead>
-                <tr class="text-muted small">
-                    <th class="ps-3">ID</th>
-                    <th>Pedido / Status</th>
-                    <th class="text-end pe-3">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for request in requests %}
-                <tr>
-                    <td class="ps-3 text-muted">#{{ request.id }}</td>
-                    <td>
-                        <div class="fw-bold"><a href="{{ url_for('view_request', id=request.id) }}" class="text-white text-decoration-none">{{ request.title }}</a></div>
-                        <div class="small mt-1 d-flex flex-wrap gap-1">
-                            <span class="badge bg-primary bg-opacity-25 text-primary x-small">{{ request.get_status_display() }}</span>
-                            <span class="text-muted x-small opacity-50">{{ request.request_date.strftime('%d/%m/%Y') }}</span>
-                        </div>
-                    </td>
-                    <td class="text-end pe-3">
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 bg-dark text-white">
-                                <li><a class="dropdown-item text-white" href="{{ url_for('view_request', id=request.id) }}"><i class="fas fa-eye me-2"></i>Ver</a></li>
-                                <li><a class="dropdown-item text-white" href="{{ url_for('edit_request', id=request.id) }}"><i class="fas fa-edit me-2"></i>Editar</a></li>
-                                <li><hr class="dropdown-divider bg-secondary"></li>
-                                <li>
-                                    <form method="POST" action="{{ url_for('delete_request', id=request.id) }}" onsubmit="return confirm('Excluir?')">
-                                        <button type="submit" class="dropdown-item text-danger"><i class="fas fa-trash me-2"></i>Excluir</button>
+<!-- Requests Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Pedidos de Aquisição</h5>
+    </div>
+    <div class="card-body">
+        {% if requests %}
+            <div class="table-responsive">
+                <table class="table table-hover table-nowrap">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 60px;">ID</th>
+                            <th style="min-width: 200px;">Título</th>
+                            <th style="min-width: 120px;">Status</th>
+                            <th style="min-width: 100px;">Prioridade</th>
+                            <th style="min-width: 100px;">Classe</th>
+                            <th style="min-width: 100px;">Categoria</th>
+                            <th style="min-width: 120px;">Valor Estimado</th>
+                            <th style="min-width: 120px;">Valor Final</th>
+                            <th style="min-width: 150px;">Responsável</th>
+                            <th style="min-width: 120px;">Criado por</th>
+                            <th style="min-width: 120px;">Data da Solicitação</th>
+                            <th style="min-width: 200px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in requests %}
+                        <tr>
+                            <td>#{{ request.id }}</td>
+                            <td>
+                                <a href="{{ url_for('view_request', id=request.id) }}" class="text-decoration-none">
+                                    {{ request.title }}
+                                </a>
+                                {% if request.attachments.count() > 0 %}
+                                    <i class="fas fa-paperclip text-muted ms-1" title="{{ request.attachments.count() }} anexo(s)"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set status_classes = {
+                                    'aberto': 'info',
+                                    'em_cotacao': 'warning',
+                                    'aprovado': 'primary',
+                                    'pedido_emitido': 'success',
+                                    'recebido': 'dark',
+                                    'cancelado': 'danger'
+                                } %}
+                                <span class="badge bg-{{ status_classes.get(request.status, 'secondary') }} text-white">
+                                    {{ request.get_status_display() }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary text-white">
+                                    {{ request.get_priority_display() }}
+                                </span>
+                            </td>
+                            <td>
+                                {% set classe_classes = {
+                                    'ensino': 'info',
+                                    'manutencao': 'secondary'
+                                } %}
+                                {% set classe_names = {
+                                    'ensino': 'Ensino',
+                                    'manutencao': 'Manutenção'
+                                } %}
+                                <span class="badge bg-{{ classe_classes.get(request.classe, 'secondary') }} text-white">
+                                    {{ classe_names.get(request.classe, request.classe) }}
+                                </span>
+                            </td>
+                            <td>
+                                {% set categoria_classes = {
+                                    'material': 'success',
+                                    'servico': 'warning'
+                                } %}
+                                {% set categoria_names = {
+                                    'material': 'Material',
+                                    'servico': 'Serviço'
+                                } %}
+                                <span class="badge bg-{{ categoria_classes.get(request.categoria, 'secondary') }} text-white">
+                                    {{ categoria_names.get(request.categoria, request.categoria) }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if request.estimated_value %}
+                                    <span class="text-success fw-bold">R$ {{ "%.2f"|format(request.estimated_value) }}</span>
+                                {% else %}
+                                    <span class="text-muted">Não informado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if request.final_value %}
+                                    <span class="text-warning fw-bold">R$ {{ "%.2f"|format(request.final_value) }}</span>
+                                {% else %}
+                                    <span class="text-muted">Não informado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if request.responsible %}
+                                    {{ request.responsible.full_name }}
+                                {% else %}
+                                    <span class="text-muted">Não definido</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ request.creator.full_name }}</td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ request.request_date.strftime('%d/%m/%Y') }}
+                                </small>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('view_request', id=request.id) }}" class="btn btn-sm btn-outline-primary" title="Ver detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('edit_request', id=request.id) }}" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('generate_request_pdf_route', id=request.id) }}" class="btn btn-sm btn-outline-success" title="Gerar PDF">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    <a href="{{ url_for('export_excel_request', id=request.id) }}" class="btn btn-sm btn-outline-success" title="Exportar Excel">
+                                        <i class="fas fa-file-excel"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('delete_request', id=request.id) }}" 
+                                          class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </form>
-                                </li>
-                            </ul>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Navegação de páginas" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('dashboard', page=pagination.prev_num, search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-chevron-left"></i> Anterior</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num != pagination.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('dashboard', page=page_num, search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('dashboard', page=pagination.next_num, search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
+                            Próxima <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Próxima <i class="fas fa-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Nenhum pedido encontrado</h5>
+                <p class="text-muted">
+                    {% if request.args.get('search') or request.args.get('status_filter') or request.args.get('responsible_filter') %}
+                        Tente ajustar os filtros de busca.
+                    {% else %}
+                        Crie seu primeiro pedido de aquisição!
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
     </div>
 </div>
-
-<style>
-    .x-small { font-size: 0.65rem; }
-    .table-dark { --bs-table-bg: #1e1e1e; }
-    .btn-primary { background-color: #0d6efd; border: none; }
-    .card.bg-dark { background-color: #1e1e1e !important; }
-</style>
 {% endblock %}

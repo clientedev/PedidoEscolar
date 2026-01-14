@@ -20,24 +20,30 @@ def allowed_file(filename):
 
 def save_file(file):
     """Save uploaded file and return filename and content"""
-    if file and allowed_file(file.filename):
+    if not (file and file.filename and allowed_file(file.filename)):
+        return None, None, None, None
+        
+    try:
         filename = secure_filename(file.filename)
-        # Generate unique filename to prevent conflicts
         name, ext = os.path.splitext(filename)
         unique_filename = f"{name}_{secrets.token_hex(8)}{ext}"
         
-        # Reset pointer before reading
         file.seek(0)
         file_content = file.read()
         file_size = len(file_content)
         
-        # Save to disk as backup/temp
+        if file_size == 0:
+            return None, None, None, None
+            
+        # Optional: save to disk
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         with open(file_path, 'wb') as f:
             f.write(file_content)
             
         return unique_filename, filename, file_size, file_content
-    return None, None, None, None
+    except Exception as e:
+        app.logger.error(f"Erro no save_file: {e}")
+        return None, None, None, None
 
 @app.route('/')
 @app.route('/dashboard')
@@ -253,23 +259,25 @@ def new_request():
         db.session.add(status_change)
         
         # Handle file uploads
-        attachment_files = request.files.getlist('attachments')
-        app.logger.info(f"Arquivos recebidos na criacao: {[f.filename for f in attachment_files]}")
         uploaded_files = []
-        for file in attachment_files:
-            if file and file.filename:
-                unique_filename, original_filename, file_size, file_content = save_file(file)
-                if unique_filename and file_size > 0:
-                    attachment = Attachment()
-                    attachment.filename = unique_filename
-                    attachment.original_filename = original_filename
-                    attachment.file_size = file_size
-                    attachment.file_content = file_content
-                    attachment.request_id = request_obj.id
-                    attachment.uploaded_by_id = current_user.id
-                    db.session.add(attachment)
-                    uploaded_files.append(original_filename)
-                    app.logger.info(f"Anexo salvo: {original_filename} ({file_size} bytes)")
+        try:
+            attachment_files = request.files.getlist('attachments')
+            for file in attachment_files:
+                if file and file.filename:
+                    unique_filename, original_filename, file_size, file_content = save_file(file)
+                    if unique_filename and file_content:
+                        attachment = Attachment(
+                            filename=unique_filename,
+                            original_filename=original_filename,
+                            file_size=file_size,
+                            file_content=file_content,
+                            request_id=request_obj.id,
+                            uploaded_by_id=current_user.id
+                        )
+                        db.session.add(attachment)
+                        uploaded_files.append(original_filename)
+        except Exception as e:
+            app.logger.error(f"Erro no upload (novo): {e}")
         
         db.session.commit()
         
@@ -328,25 +336,24 @@ def edit_request(id):
             db.session.add(status_change)
         
         # Handle attachments
-        attachment_files = request.files.getlist('attachments')
-        app.logger.info(f"Arquivos recebidos na edicao: {[f.filename for f in attachment_files]}")
-        uploaded_files = []
-        allowed_extensions = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'}
-        for file in attachment_files:
-            if file and file.filename:
-                unique_filename, original_filename, file_size, file_content = save_file(file)
-                if unique_filename and file_size > 0:
-                    attachment = Attachment(
-                        filename=unique_filename,
-                        original_filename=original_filename,
-                        file_size=file_size,
-                        file_content=file_content,
-                        request_id=request_obj.id,
-                        uploaded_by_id=current_user.id
-                    )
-                    db.session.add(attachment)
-                    uploaded_files.append(original_filename)
-                    app.logger.info(f"Anexo salvo na edicao: {original_filename} ({file_size} bytes)")
+        try:
+            attachment_files = request.files.getlist('attachments')
+            for file in attachment_files:
+                if file and file.filename:
+                    unique_filename, original_filename, file_size, file_content = save_file(file)
+                    if unique_filename and file_content:
+                        attachment = Attachment(
+                            filename=unique_filename,
+                            original_filename=original_filename,
+                            file_size=file_size,
+                            file_content=file_content,
+                            request_id=request_obj.id,
+                            uploaded_by_id=current_user.id
+                        )
+                        db.session.add(attachment)
+                        app.logger.info(f"Anexo adicionado na edicao: {original_filename}")
+        except Exception as e:
+            app.logger.error(f"Erro no upload (edicao): {e}")
         
         try:
             db.session.commit()
@@ -355,7 +362,7 @@ def edit_request(id):
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error updating request {id}: {e}")
-            flash('Erro ao atualizar o pedido. Tente novamente.', 'danger')
+            flash('Erro ao salvar no banco de dados.', 'danger')
             return render_template('request_form.html', form=form, request_obj=request_obj, title='Editar Pedido')
     
     if request.method == 'GET':

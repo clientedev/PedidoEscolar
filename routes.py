@@ -13,18 +13,6 @@ from pdf_generator import generate_request_pdf, generate_general_report
 from excel_generator import generate_requests_excel, generate_request_excel
 from excel_template_generator import generate_import_template, process_import_file
 from flask import Response
-import datetime as dt
-
-def add_business_days(from_date, add_days):
-    business_days_to_add = add_days
-    current_date = from_date
-    while business_days_to_add > 0:
-        current_date += dt.timedelta(days=1)
-        weekday = current_date.weekday()
-        if weekday >= 5: # Sat=5, Sun=6
-            continue
-        business_days_to_add -= 1
-    return current_date
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'}
@@ -164,7 +152,7 @@ def login():
                 login_user(user)
                 return redirect(url_for('first_password'))
             # Normal password authentication
-            elif user.password_hash and check_password_hash(user.password_hash, form.password.data or ''):
+            elif user.password_hash and check_password_hash(user.password_hash, form.password.data):
                 if not user.is_active:
                     flash('Sua conta está desativada. Entre em contato com o administrador.', 'danger')
                     return redirect(url_for('login'))
@@ -196,7 +184,7 @@ def first_password():
     
     form = FirstPasswordForm()
     if form.validate_on_submit():
-        current_user.password_hash = generate_password_hash(form.new_password.data or '')
+        current_user.password_hash = generate_password_hash(form.new_password.data)
         current_user.needs_password_reset = False
         db.session.commit()
         flash('Sua senha foi definida com sucesso!', 'success')
@@ -214,20 +202,7 @@ def new_request():
         request_obj.title = form.title.data
         request_obj.description = form.description.data
         request_obj.status = form.status.data
-        request_obj.priority = form.priority.data
-        request_obj.impact = form.impact.data
         request_obj.classe = form.classe.data
-        
-        # Calculate deadline automatically based on priority
-        deadline_days = 15 # Default
-        if request_obj.priority == 'nivel1':
-            deadline_days = 5
-        elif request_obj.priority == 'nivel2':
-            deadline_days = 10
-        elif request_obj.priority == 'nivel3':
-            deadline_days = 15
-        
-        request_obj.deadline = add_business_days(form.request_date.data, deadline_days)
         
         # Process categoria checkboxes
         categorias = []
@@ -251,7 +226,7 @@ def new_request():
         status_change.new_status = form.status.data
         status_change.request_id = request_obj.id
         status_change.changed_by_id = current_user.id
-        status_change.comments = f'Pedido criado com prioridade {request_obj.get_priority_display()} e impacto {request_obj.get_impact_display()}'
+        status_change.comments = 'Pedido criado'
         db.session.add(status_change)
         
         # Handle file uploads
@@ -302,20 +277,7 @@ def edit_request(id):
         request_obj.title = form.title.data
         request_obj.description = form.description.data
         request_obj.status = form.status.data
-        request_obj.priority = form.priority.data
-        request_obj.impact = form.impact.data
         request_obj.classe = form.classe.data
-        
-        # Re-calculate deadline if priority or request_date changed
-        deadline_days = 15
-        if request_obj.priority == 'nivel1':
-            deadline_days = 5
-        elif request_obj.priority == 'nivel2':
-            deadline_days = 10
-        elif request_obj.priority == 'nivel3':
-            deadline_days = 15
-            
-        request_obj.deadline = add_business_days(form.request_date.data, deadline_days)
         
         # Process categoria checkboxes
         categorias = []
@@ -368,12 +330,6 @@ def edit_request(id):
     # Pre-populate form
     if request_obj.responsible_id:
         form.responsible_id.data = request_obj.responsible_id
-    
-    if request_obj.priority:
-        form.priority.data = request_obj.priority
-        
-    if request_obj.impact:
-        form.impact.data = request_obj.impact
         
     # Pre-populate categoria checkboxes
     if request_obj.categoria:

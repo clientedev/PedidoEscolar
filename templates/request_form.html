@@ -47,17 +47,6 @@
                             {% endif %}
                         </div>
                         <div class="col-md-4">
-                            {{ form.priority.label(class="form-label") }}
-                            {{ form.priority(class="form-select") }}
-                        </div>
-                        <div class="col-md-4">
-                            {{ form.impact.label(class="form-label") }}
-                            {{ form.impact(class="form-select") }}
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
                             {{ form.classe.label(class="form-label") }}
                             {{ form.classe(class="form-select") }}
                             {% if form.classe.errors %}
@@ -83,10 +72,21 @@
                                 </div>
                             {% endif %}
                         </div>
-                        <div class="col-md-4">
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.responsible_id.label(class="form-label") }}
+                            {{ form.responsible_id(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
                             {{ form.request_date.label(class="form-label") }}
                             {{ form.request_date(class="form-control") }}
-                            <div class="form-text text-info">O prazo será calculado automaticamente com base na prioridade escolhida.</div>
+                            {% if form.request_date.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.request_date.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     

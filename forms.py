@@ -14,8 +14,6 @@ class AcquisitionRequestForm(FlaskForm):
     title = StringField('Título', validators=[DataRequired(), Length(min=5, max=200)])
     description = TextAreaField('Descrição', validators=[DataRequired(), Length(min=10, max=1000)])
     status = SelectField('Status', validators=[DataRequired()])
-    priority = SelectField('Prioridade', validators=[DataRequired()])
-    impact = SelectField('Impacto', validators=[DataRequired()])
     classe = SelectField('Classe', validators=[DataRequired()])
     categoria_material = BooleanField('Material')
     categoria_servico = BooleanField('Serviço')
@@ -38,17 +36,13 @@ class AcquisitionRequestForm(FlaskForm):
         super(AcquisitionRequestForm, self).__init__(*args, **kwargs)
         # Populate status choices
         self.status.choices = AcquisitionRequest.STATUS_CHOICES
-        # Populate priority choices
-        self.priority.choices = AcquisitionRequest.PRIORITY_CHOICES
-        # Populate impact choices
-        self.impact.choices = AcquisitionRequest.IMPACT_CHOICES
         # Populate classe choices
         self.classe.choices = AcquisitionRequest.CLASSE_CHOICES
         # Categoria fields are now checkboxes, no choices needed
         # Populate responsible choices with active users
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
-        ] # type: ignore
+        ]
         # Set default date to today if not already set
         if not self.request_date.data:
             from datetime import date
@@ -58,8 +52,6 @@ class EditRequestForm(FlaskForm):
     title = StringField('Título', validators=[DataRequired(), Length(min=5, max=200)])
     description = TextAreaField('Descrição', validators=[DataRequired(), Length(min=10, max=1000)])
     status = SelectField('Status', validators=[DataRequired()])
-    priority = SelectField('Prioridade', validators=[DataRequired()])
-    impact = SelectField('Impacto', validators=[DataRequired()])
     classe = SelectField('Classe', validators=[DataRequired()])
     categoria_material = BooleanField('Material')
     categoria_servico = BooleanField('Serviço')
@@ -82,14 +74,11 @@ class EditRequestForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(EditRequestForm, self).__init__(*args, **kwargs)
         self.status.choices = AcquisitionRequest.STATUS_CHOICES
-        self.priority.choices = AcquisitionRequest.PRIORITY_CHOICES
-        self.impact.choices = AcquisitionRequest.IMPACT_CHOICES
         self.classe.choices = AcquisitionRequest.CLASSE_CHOICES
         # Categoria fields are now checkboxes, no choices needed
-        # Populate responsible choices with active users
         self.responsible_id.choices = [(0, 'Selecionar responsável...')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
-        ] # type: ignore
+        ]
 
 class UserForm(FlaskForm):
     username = StringField('Usuário', validators=[DataRequired(), Length(min=4, max=64)])
@@ -137,12 +126,12 @@ class SearchForm(FlaskForm):
     
     def __init__(self, *args, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
-        self.status_filter.choices = [('', 'Todos os status')] + AcquisitionRequest.STATUS_CHOICES # type: ignore
-        self.classe_filter.choices = [('', 'Todas as classes')] + AcquisitionRequest.CLASSE_CHOICES # type: ignore
-        self.categoria_filter.choices = [('', 'Todas as categorias')] + AcquisitionRequest.CATEGORIA_CHOICES # type: ignore
+        self.status_filter.choices = [('', 'Todos os status')] + AcquisitionRequest.STATUS_CHOICES
+        self.classe_filter.choices = [('', 'Todas as classes')] + AcquisitionRequest.CLASSE_CHOICES
+        self.categoria_filter.choices = [('', 'Todas as categorias')] + AcquisitionRequest.CATEGORIA_CHOICES
         self.responsible_filter.choices = [(0, 'Todos os responsáveis')] + [
             (user.id, user.full_name) for user in User.query.filter_by(active=True).all()
-        ] # type: ignore
+        ]
 
 class BulkImportForm(FlaskForm):
     excel_file = FileField('Arquivo Excel', validators=[

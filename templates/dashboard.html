@@ -127,8 +127,6 @@
                             <th style="min-width: 60px;">ID</th>
                             <th style="min-width: 200px;">Título</th>
                             <th style="min-width: 120px;">Status</th>
-                            <th style="min-width: 120px;">Prioridade</th>
-                            <th style="min-width: 120px;">Prazo</th>
                             <th style="min-width: 100px;">Classe</th>
                             <th style="min-width: 100px;">Categoria</th>
                             <th style="min-width: 120px;">Valor Estimado</th>
@@ -153,28 +151,20 @@
                             </td>
                             <td>
                                 {% set status_classes = {
-                                    'aberto': 'info',
-                                    'em_cotacao': 'warning',
-                                    'aprovado': 'primary',
-                                    'pedido_emitido': 'success',
-                                    'recebido': 'dark',
-                                    'cancelado': 'danger'
+                                    'orcamento': 'warning',
+                                    'fase_compra': 'info',
+                                    'a_caminho': 'primary',
+                                    'finalizado': 'success'
+                                } %}
+                                {% set status_names = {
+                                    'orcamento': 'Orçamento',
+                                    'fase_compra': 'Fase de Compra',
+                                    'a_caminho': 'A Caminho',
+                                    'finalizado': 'Finalizado'
                                 } %}
                                 <span class="badge bg-{{ status_classes.get(request.status, 'secondary') }} text-white">
-                                    {{ request.get_status_display() }}
+                                    {{ status_names.get(request.status, request.status) }}
                                 </span>
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary text-white">
-                                    {{ request.get_priority_display() }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if request.deadline %}
-                                    <small class="fw-bold text-danger">{{ request.deadline.strftime('%d/%m/%Y') }}</small>
-                                {% else %}
-                                    <small class="text-muted">-</small>
-                                {% endif %}
                             </td>
                             <td>
                                 {% set classe_classes = {

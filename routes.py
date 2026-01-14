@@ -282,13 +282,11 @@ def view_request(id):
 @login_required
 def edit_request(id):
     request_obj = AcquisitionRequest.query.get_or_404(id)
+    form = EditRequestForm()
     
-    
-    form = EditRequestForm(obj=request_obj)
     if form.validate_on_submit():
         app.logger.debug(f"Form validated for request {id}")
         old_status = request_obj.status
-        old_responsible = request_obj.responsible_id
         
         # Update request
         request_obj.title = form.title.data
@@ -298,13 +296,11 @@ def edit_request(id):
         request_obj.impact = form.impact.data
         request_obj.classe = form.classe.data
         
-        # Process categoria checkboxes
         categorias = []
-        if form.categoria_material.data:
-            categorias.append('material')
-        if form.categoria_servico.data:
-            categorias.append('servico')
+        if form.categoria_material.data: categorias.append('material')
+        if form.categoria_servico.data: categorias.append('servico')
         request_obj.categoria = ','.join(categorias) if categorias else 'material'
+        
         request_obj.observations = form.observations.data
         request_obj.estimated_value = form.estimated_value.data
         request_obj.final_value = form.final_value.data
@@ -312,7 +308,6 @@ def edit_request(id):
         request_obj.responsible_id = form.responsible_id.data if form.responsible_id.data and form.responsible_id.data > 0 else None
         request_obj.updated_at = datetime.utcnow()
         
-        # Record status change if status changed
         if old_status != request_obj.status:
             status_change = StatusChange()
             status_change.old_status = old_status
@@ -322,58 +317,55 @@ def edit_request(id):
             status_change.comments = form.change_comments.data
             db.session.add(status_change)
         
-        # Handle new file uploads
+        # Handle attachments
+        attachment_files = request.files.getlist('attachments')
         uploaded_files = []
-        # Get files from the form field directly to avoid list retrieval issues
-        attachment_files = form.attachments.data
-        if attachment_files:
-            for file in attachment_files:
-                if file and file.filename:
-                    unique_filename, original_filename, file_size = save_file(file)
-                    if unique_filename:
-                        attachment = Attachment()
-                        attachment.filename = unique_filename
-                        attachment.original_filename = original_filename
-                        attachment.file_size = file_size
-                        attachment.request_id = request_obj.id
-                        attachment.uploaded_by_id = current_user.id
-                        db.session.add(attachment)
-                        uploaded_files.append(original_filename)
+        allowed_extensions = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'}
+        for file in attachment_files:
+            if file and file.filename:
+                ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+                if ext not in allowed_extensions:
+                    flash(f'Arquivo {file.filename} ignorado. Apenas PDF, Word, Excel e imagens são permitidos.', 'warning')
+                    continue
+                unique_filename, original_filename, file_size = save_file(file)
+                if unique_filename:
+                    attachment = Attachment(
+                        filename=unique_filename,
+                        original_filename=original_filename,
+                        file_size=file_size,
+                        request_id=request_obj.id,
+                        uploaded_by_id=current_user.id
+                    )
+                    db.session.add(attachment)
+                    uploaded_files.append(original_filename)
         
         db.session.commit()
-        
-        flash_message = f'Pedido "{request_obj.title}" atualizado com sucesso!'
-        if uploaded_files:
-            flash_message += f' Novos arquivos anexados: {", ".join(uploaded_files)}'
-        flash(flash_message, 'success')
+        flash(f'Pedido "{request_obj.title}" atualizado com sucesso!', 'success')
         return redirect(url_for('view_request', id=id))
     
-    else:
-        if request.method == 'POST':
-            app.logger.warning(f"Form validation failed for request {id}: {form.errors}")
-            # If there are errors in 'attachments', they might be causing the failure
-            if 'attachments' in form.errors:
-                app.logger.error(f"Attachment errors: {form.errors['attachments']}")
-            flash('Erro ao validar o formulário. Por favor, verifique os campos.', 'danger')
-    
-    # Pre-populate form
-    if request_obj.responsible_id:
-        form.responsible_id.data = request_obj.responsible_id
-    else:
-        form.responsible_id.data = 0
-        
-    # Pre-populate categoria checkboxes
-    if request_obj.categoria:
-        categorias = request_obj.categoria.split(',')
-        form.categoria_material.data = 'material' in categorias
-        form.categoria_servico.data = 'servico' in categorias
-    
-    # Pre-populate priority and impact if not set from form
-    if not form.priority.data:
+    if request.method == 'GET':
+        form.title.data = request_obj.title
+        form.description.data = request_obj.description
+        form.status.data = request_obj.status
         form.priority.data = request_obj.priority
-    if not form.impact.data:
         form.impact.data = request_obj.impact
+        form.classe.data = request_obj.classe
+        form.observations.data = request_obj.observations
+        form.estimated_value.data = request_obj.estimated_value
+        form.final_value.data = request_obj.final_value
+        form.request_date.data = request_obj.request_date
+        form.responsible_id.data = request_obj.responsible_id or 0
+        if request_obj.categoria:
+            cats = request_obj.categoria.split(',')
+            form.categoria_material.data = 'material' in cats
+            form.categoria_servico.data = 'servico' in cats
     
+    elif request.method == 'POST':
+        app.logger.warning(f"Form validation failed for request {id}: {form.errors}")
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Erro no campo {getattr(form, field).label.text}: {error}", 'danger')
+            
     return render_template('request_form.html', form=form, request_obj=request_obj, title='Editar Pedido')
 
 @app.route('/upload/<filename>')

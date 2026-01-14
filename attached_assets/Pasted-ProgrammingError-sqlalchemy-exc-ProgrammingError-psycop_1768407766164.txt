@@ -1,0 +1,99 @@
+ProgrammingError
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column acquisition_request.priority does not exist
+LINE 1: ...observations AS acquisition_request_observations, acquisitio...
+                                                             ^
+
+[SQL: SELECT acquisition_request.id AS acquisition_request_id, acquisition_request.title AS acquisition_request_title, acquisition_request.description AS acquisition_request_description, acquisition_request.status AS acquisition_request_status, acquisition_request.observations AS acquisition_request_observations, acquisition_request.priority AS acquisition_request_priority, acquisition_request.impact AS acquisition_request_impact, acquisition_request.estimated_value AS acquisition_request_estimated_value, acquisition_request.final_value AS acquisition_request_final_value, acquisition_request.request_date AS acquisition_request_request_date, acquisition_request.classe AS acquisition_request_classe, acquisition_request.categoria AS acquisition_request_categoria, acquisition_request.created_at AS acquisition_request_created_at, acquisition_request.updated_at AS acquisition_request_updated_at, acquisition_request.created_by_id AS acquisition_request_created_by_id, acquisition_request.responsible_id AS acquisition_request_responsible_id 
+FROM acquisition_request ORDER BY acquisition_request.updated_at DESC 
+ LIMIT %(param_1)s OFFSET %(param_2)s]
+[parameters: {'param_1': 10, 'param_2': 0}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+
+Traceback (most recent call last)
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+self.dialect.do_execute(
+^
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The above exception was the direct cause of the following exception:
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 1536, in __call__
+return self.wsgi_app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/werkzeug/middleware/proxy_fix.py", line 183, in __call__
+return self.app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 1514, in wsgi_app
+response = self.handle_exception(e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 1511, in wsgi_app
+response = self.full_dispatch_request()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 919, in full_dispatch_request
+rv = self.handle_user_exception(e)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+rv = self.dispatch_request()
+     ^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask_login/utils.py", line 290, in decorated_view
+return current_app.ensure_sync(func)(*args, **kwargs)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/app/routes.py", line 88, in dashboard
+requests_pagination = query.order_by(desc(AcquisitionRequest.updated_at)).paginate(
+                      
+File "/opt/venv/lib/python3.12/site-packages/flask_sqlalchemy/query.py", line 98, in paginate
+return QueryPagination(
+       
+File "/opt/venv/lib/python3.12/site-packages/flask_sqlalchemy/pagination.py", line 72, in __init__
+items = self._query_items()
+        ^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask_sqlalchemy/pagination.py", line 358, in _query_items
+out = query.limit(self.per_page).offset(self._query_offset).all()
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2704, in all
+return self._iter().all()  # type: ignore
+       ^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                              
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+return self._execute_internal(
+       
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+result: Result[Any] = compile_state_cls.orm_execute_statement(
+                      
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+result = conn.execute(
+         
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+return meth(
+       
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+return connection._execute_clauseelement(
+       
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+ret = self._execute_context(
+      
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+return self._exec_single_context(
+       
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+self._handle_dbapi_exception(
+^
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+self.dialect.do_execute(
+^
+File "/opt/venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column acquisition_request.priority does not exist LINE 1: ...observations AS acquisition_request_observations, acquisitio... ^  [SQL: SELECT acquisition_request.id AS acquisition_request_id, acquisition_request.title AS acquisition_request_title, acquisition_request.description AS acquisition_request_description, acquisition_request.status AS acquisition_request_status, acquisition_request.observations AS acquisition_request_observations, acquisition_request.priority AS acquisition_request_priority, acquisition_request.impact AS acquisition_request_impact, acquisition_request.estimated_value AS acquisition_request_estimated_value, acquisition_request.final_value AS acquisition_request_final_value, acquisition_request.request_date AS acquisition_request_request_date, acquisition_request.classe AS acquisition_request_classe, acquisition_request.categoria AS acquisition_request_categoria, acquisition_request.created_at AS acquisition_request_created_at, acquisition_request.updated_at AS acquisition_request_updated_at, acquisition_request.created_by_id AS acquisition_request_created_by_id, acquisition_request.responsible_id AS acquisition_request_responsible_id  FROM acquisition_request ORDER BY acquisition_request.updated_at DESC  LIMIT %(param_1)s OFFSET %(param_2)s] [parameters: {'param_1': 10, 'param_2': 0}] (Background on this error at: https://sqlalche.me/e/20/f405) 
+The debugger caught an exception in your WSGI application. You can now look at the traceback which led to the error.
+To switch between the interactive traceback and the plaintext one, you can click on the "Traceback" headline. From the text traceback you can also create a paste of it.
+
+Brought to you by DON'T PANIC, your friendly Werkzeug powered traceback interpreter.

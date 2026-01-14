@@ -46,6 +46,13 @@ with app.app_context():
     import models
     import routes
     
+    # Run automatic migrations
+    try:
+        import migrate
+        migrate.migrate()
+    except Exception as e:
+        app.logger.error(f"Migration error: {e}")
+    
     # Create all tables
     db.create_all()
     

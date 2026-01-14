@@ -146,8 +146,9 @@
                             {{ form.attachments.label(class="form-label") }}
                             {{ form.attachments(class="form-control", multiple=True) }}
                             <div class="form-text">
-                                Formatos aceitos: PDF, Word, Excel, PNG, JPG (máx. 16MB cada)
+                                Formatos aceitos: PDF, Word, Excel, PNG, JPG (máx. 16MB cada). Você pode selecionar vários arquivos.
                             </div>
+                            <div id="file-list" class="mt-2 small text-muted"></div>
                             {% if form.attachments.errors %}
                                 <div class="text-danger">
                                     {% for error in form.attachments.errors %}{{ error }}{% endfor %}
@@ -222,6 +223,27 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
         }
     });
+
+    // Show selected files list
+    const attachmentsInput = document.querySelector('input[name="attachments"]');
+    const fileListDiv = document.getElementById('file-list');
+    
+    if (attachmentsInput && fileListDiv) {
+        attachmentsInput.addEventListener('change', function() {
+            fileListDiv.innerHTML = '';
+            if (this.files.length > 0) {
+                const list = document.createElement('ul');
+                list.className = 'list-unstyled mb-0';
+                for (let i = 0; i < this.files.length; i++) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<i class="fas fa-paperclip me-1"></i> ${this.files[i].name} (${(this.files[i].size / 1024).toFixed(1)} KB)`;
+                    list.appendChild(li);
+                }
+                fileListDiv.appendChild(list);
+                fileListDiv.innerHTML += `<div class="mt-1 text-primary"><i class="fas fa-check-circle me-1"></i> ${this.files.length} arquivo(s) selecionado(s)</div>`;
+            }
+        });
+    }
 
     // Auto-resize textareas
     const textareas = document.querySelectorAll('textarea');

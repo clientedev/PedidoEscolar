@@ -261,21 +261,36 @@ def new_request():
         # Handle file uploads
         uploaded_files = []
         try:
-            attachment_files = request.files.getlist('attachments')
-            for file in attachment_files:
-                if file and file.filename:
-                    unique_filename, original_filename, file_size, file_content = save_file(file)
-                    if unique_filename and file_content:
-                        attachment = Attachment(
-                            filename=unique_filename,
-                            original_filename=original_filename,
-                            file_size=file_size,
-                            file_content=file_content,
-                            request_id=request_obj.id,
-                            uploaded_by_id=current_user.id
-                        )
-                        db.session.add(attachment)
-                        uploaded_files.append(original_filename)
+            attachment_files = form.attachments.data
+            if attachment_files:
+                for file in attachment_files:
+                    if not file or not file.filename or file.filename == '':
+                        continue
+                    
+                    # Verificação de tamanho
+                    file.seek(0, os.SEEK_END)
+                    size = file.tell()
+                    file.seek(0)
+                    
+                    if size == 0:
+                        continue
+                        
+                    filename = secure_filename(file.filename)
+                    name, ext = os.path.splitext(filename)
+                    unique_filename = f"{name}_{secrets.token_hex(8)}{ext}"
+                    
+                    file_content = file.read()
+                    
+                    attachment = Attachment(
+                        filename=unique_filename,
+                        original_filename=filename,
+                        file_size=size,
+                        file_content=file_content,
+                        request_id=request_obj.id,
+                        uploaded_by_id=current_user.id
+                    )
+                    db.session.add(attachment)
+                    uploaded_files.append(filename)
         except Exception as e:
             app.logger.error(f"Erro no upload (novo): {e}")
         

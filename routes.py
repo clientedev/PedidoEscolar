@@ -331,23 +331,23 @@ def edit_request(id):
         allowed_extensions = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'}
         for file in attachment_files:
             if file and file.filename:
-                ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
-                if ext not in allowed_extensions:
-                    flash(f'Arquivo {file.filename} ignorado. Apenas PDF, Word, Excel e imagens são permitidos.', 'warning')
-                    continue
-                unique_filename, original_filename, file_size, file_content = save_file(file)
-                if unique_filename:
-                    attachment = Attachment(
-                        filename=unique_filename,
-                        original_filename=original_filename,
-                        file_size=file_size,
-                        file_content=file_content,
-                        request_id=request_obj.id,
-                        uploaded_by_id=current_user.id
-                    )
-                    db.session.add(attachment)
-                    uploaded_files.append(original_filename)
-                    app.logger.info(f"Salvo no banco: {original_filename} ({len(file_content)} bytes)")
+                try:
+                    unique_filename, original_filename, file_size, file_content = save_file(file)
+                    if unique_filename:
+                        attachment = Attachment(
+                            filename=unique_filename,
+                            original_filename=original_filename,
+                            file_size=file_size,
+                            file_content=file_content,
+                            request_id=request_obj.id,
+                            uploaded_by_id=current_user.id
+                        )
+                        db.session.add(attachment)
+                        uploaded_files.append(original_filename)
+                        app.logger.info(f"Salvo no banco: {original_filename} ({len(file_content)} bytes)")
+                except Exception as e:
+                    app.logger.error(f"Erro ao processar anexo {file.filename}: {e}")
+                    flash(f"Erro ao processar o arquivo {file.filename}.", "danger")
         
         try:
             db.session.commit()

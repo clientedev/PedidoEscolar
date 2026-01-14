@@ -266,7 +266,7 @@ def new_request():
                         attachment.uploaded_by_id = current_user.id
                         db.session.add(attachment)
                         uploaded_files.append(original_filename)
-                        app.logger.debug(f"Attachment created for {original_filename}")
+                        app.logger.info(f"Salvo no banco (novo): {original_filename} ({len(file_content)} bytes)")
         
         db.session.commit()
         
@@ -347,7 +347,7 @@ def edit_request(id):
                     )
                     db.session.add(attachment)
                     uploaded_files.append(original_filename)
-                    app.logger.debug(f"Attachment created in edit for {original_filename}")
+                    app.logger.info(f"Salvo no banco: {original_filename} ({len(file_content)} bytes)")
         
         db.session.commit()
         flash(f'Pedido "{request_obj.title}" atualizado com sucesso!', 'success')

@@ -412,42 +412,45 @@ def edit_request(id):
 def download_attachment(id):
     attachment = Attachment.query.get_or_404(id)
     if not attachment.file_content:
-        # Fallback para sistema de arquivos se o conteúdo não estiver no banco
-        return send_from_directory(app.config['UPLOAD_FOLDER'], attachment.filename)
+        # Fallback to filesystem
+        try:
+            return send_from_directory(app.config['UPLOAD_FOLDER'], attachment.filename)
+        except:
+            abort(404)
     
-    from io import BytesIO
+    import io
     return send_file(
-        BytesIO(attachment.file_content),
+        io.BytesIO(attachment.file_content),
         mimetype='application/octet-stream',
         as_attachment=True,
         download_name=attachment.original_filename
     )
 
-@app.route('/upload/<filename>')
+@app.route('/attachment/<int:id>/delete', methods=['POST'])
 @login_required
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-@app.route('/attachment/<int:id>/delete_old', methods=['POST'])
-@login_required
-def delete_attachment_old(id):
+def delete_attachment(id):
     attachment = Attachment.query.get_or_404(id)
     request_obj = attachment.request
     
+    # Verify ownership or admin status
+    if request_obj.created_by_id != current_user.id and not current_user.is_admin:
+        flash('Sem permissão para excluir este anexo.', 'danger')
+        return redirect(url_for('edit_request', id=request_obj.id))
     
-    # Delete file from filesystem
     try:
+        # Delete from disk if exists
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], attachment.filename)
         if os.path.exists(file_path):
             os.remove(file_path)
+            
+        db.session.delete(attachment)
+        db.session.commit()
+        flash(f'Anexo "{attachment.original_filename}" removido com sucesso.', 'success')
     except Exception as e:
-        app.logger.error(f"Error deleting file {attachment.filename}: {e}")
-    
-    # Delete database record
-    db.session.delete(attachment)
-    db.session.commit()
-    
-    flash(f'Anexo "{attachment.original_filename}" removido com sucesso.', 'success')
+        db.session.rollback()
+        app.logger.error(f"Erro ao excluir anexo {id}: {e}")
+        flash('Erro ao excluir anexo.', 'danger')
+        
     return redirect(url_for('edit_request', id=request_obj.id))
 
 @app.route('/admin')

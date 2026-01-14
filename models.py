@@ -30,8 +30,11 @@ class AcquisitionRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    status = db.Column(db.String(50), nullable=False, default='orcamento')
+    status = db.Column(db.String(50), nullable=False, default='aberto')
     observations = db.Column(db.Text)
+    priority = db.Column(db.String(20)) # nivel1, nivel2, nivel3
+    deadline = db.Column(db.Date)
+    impact = db.Column(db.String(50)) # critico, alto, medio, baixo
     estimated_value = db.Column(db.Numeric(10, 2))  # Valor estimado para fase de orçamento
     final_value = db.Column(db.Numeric(10, 2))      # Valor final para fase de compra/entrega
     request_date = db.Column(db.Date, nullable=False, default=date.today)
@@ -50,10 +53,27 @@ class AcquisitionRequest(db.Model):
     
     # Status choices
     STATUS_CHOICES = [
-        ('orcamento', 'Orçamento'),
-        ('fase_compra', 'Fase de Compra'),
-        ('a_caminho', 'A Caminho'),
-        ('finalizado', 'Finalizado')
+        ('aberto', 'Aberto'),
+        ('em_cotacao', 'Em cotação'),
+        ('aprovado', 'Aprovado'),
+        ('pedido_emitido', 'Pedido emitido'),
+        ('recebido', 'Recebido'),
+        ('cancelado', 'Cancelado')
+    ]
+    
+    # Priority choices
+    PRIORITY_CHOICES = [
+        ('nivel1', 'Nível 1 – Urgente'),
+        ('nivel2', 'Nível 2 – Necessário'),
+        ('nivel3', 'Nível 3 – Planejado')
+    ]
+    
+    # Impact choices
+    IMPACT_CHOICES = [
+        ('critico', 'Crítico (Paralisa)'),
+        ('alto', 'Alto (Atraso)'),
+        ('medio', 'Médio'),
+        ('baixo', 'Baixo')
     ]
     
     # Classe choices
@@ -72,6 +92,14 @@ class AcquisitionRequest(db.Model):
     def get_status_display(self):
         status_dict = dict(self.STATUS_CHOICES)
         return status_dict.get(self.status, self.status)
+
+    def get_priority_display(self):
+        priority_dict = dict(self.PRIORITY_CHOICES)
+        return priority_dict.get(self.priority, self.priority)
+
+    def get_impact_display(self):
+        impact_dict = dict(self.IMPACT_CHOICES)
+        return impact_dict.get(self.impact, self.impact)
     
     def get_classe_display(self):
         classe_dict = dict(self.CLASSE_CHOICES)

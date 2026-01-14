@@ -155,7 +155,7 @@ Escola SENAI "Morvan Figueiredo"
             console.log('App was installed');
         });
 
-        installBtn.addEventListener('click', (e) => {
+        if (installBtn) installBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if (deferredPrompt) {
                 deferredPrompt.prompt();

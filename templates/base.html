@@ -13,6 +13,11 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#0d6efd">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
 </head>
 <body>
     {% if current_user.is_authenticated %}
@@ -67,6 +72,12 @@ Escola SENAI "Morvan Figueiredo"
                                 <small class="text-muted">{{ current_user.email }}</small>
                             </span></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li id="install-item" style="display: none;">
+                                <a class="dropdown-item" href="#" id="install-button">
+                                    <i class="fas fa-download me-1"></i>Instalar App
+                                </a>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item" href="{{ url_for('logout') }}">
                                 <i class="fas fa-sign-out-alt me-1"></i>Sair
                             </a></li>
@@ -112,6 +123,40 @@ Escola SENAI "Morvan Figueiredo"
     
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(reg => console.log('SW registered', reg))
+                    .catch(err => console.error('SW error', err));
+            });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        const installItem = document.getElementById('install-item');
+        const installBtn = document.getElementById('install-button');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installItem.style.display = 'block';
+        });
+
+        installBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            installItem.style.display = 'none';
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted install');
+                }
+                deferredPrompt = null;
+            });
+        });
+    </script>
     
     {% block scripts %}{% endblock %}
 </body>

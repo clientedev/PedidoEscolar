@@ -1,0 +1,46 @@
+TypeError
+TypeError: '>' not supported between instances of 'NoneType' and 'int'
+
+Traceback (most recent call last)
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 1536, in __call__
+return self.wsgi_app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/werkzeug/middleware/proxy_fix.py", line 183, in __call__
+return self.app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 1514, in wsgi_app
+response = self.handle_exception(e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 1511, in wsgi_app
+response = self.full_dispatch_request()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 919, in full_dispatch_request
+rv = self.handle_user_exception(e)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+rv = self.dispatch_request()
+     ^^^^^^^^^^^^^^^^^^^^^^^
+File "/opt/venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+            and req.method == "OPTIONS"
+        ):
+            return self.make_default_options_response()
+        # otherwise dispatch to the handler for that endpoint
+        view_args: dict[str, t.Any] = req.view_args  # type: ignore[assignment]
+        return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 
+    def full_dispatch_request(self) -> Response:
+        """Dispatches the request and on top of that performs request
+        pre and postprocessing as well as HTTP exception catching and
+        error handling.
+File "/opt/venv/lib/python3.12/site-packages/flask_login/utils.py", line 290, in decorated_view
+return current_app.ensure_sync(func)(*args, **kwargs)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/app/routes.py", line 233, in new_request
+request_obj.responsible_id = form.responsible_id.data if form.responsible_id.data > 0 else None
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: '>' not supported between instances of 'NoneType' and 'int' 
+The debugger caught an exception in your WSGI application. You can now look at the traceback which led to the error.
+To switch between the interactive traceback and the plaintext one, you can click on the "Traceback" headline. From the text traceback you can also create a paste of it.
+
+Brought to you by DON'T PANIC, your friendly Werkzeug powered traceback interpreter.

@@ -19,7 +19,9 @@ def generate_import_template():
     
     # Headers
     headers = [
-        "Título*", "Descrição*", "Status (Orçamento, Fase de Compra, etc)*", "Prioridade (Baixa, Media, Alta, Urgente)*", "Impacto (Baixo, Medio, Alto)*", "Classe (Ensino ou Manutenção)*", "Categoria (Material, Serviço)*", "Data (DD/MM/AAAA)*",
+        "Título*", "Descrição*", "Status (Aberto, Em Cotação, Aprovado, Pedido Emitido, Recebido, Cancelado)*", 
+        "Prioridade (Urgente, Necessário, Planejado)*", "Impacto (Crítico, Alto, Médio, Baixo)*", 
+        "Classe (Ensino ou Manutenção)*", "Categoria (Material, Serviço)*", "Data (DD/MM/AAAA)*",
         "Valor Estimado", "Valor Final", "Responsável (Nome Completo)", "Observações"
     ]
     
@@ -43,9 +45,9 @@ def generate_import_template():
         [
             "Compra de Material de Escritório",
             "Aquisição de canetas, papéis e materiais básicos para o escritório administrativo",
-            "orcamento",
-            "media",
-            "baixo",
+            "aberto",
+            "necessario",
+            "medio",
             "ensino",
             "material",
             "2025-08-20",
@@ -57,9 +59,9 @@ def generate_import_template():
         [
             "Equipamento de Informática",
             "Computadores para laboratório de informática - 10 unidades",
-            "fase_compra",
-            "alta",
-            "medio",
+            "em_cotacao",
+            "urgente",
+            "alto",
             "ensino",
             "material",
             "2025-08-15",
@@ -71,9 +73,9 @@ def generate_import_template():
         [
             "Serviço de Manutenção e Material",
             "Reparo do sistema elétrico com fornecimento de materiais necessários",
-            "orcamento",
+            "aberto",
             "urgente",
-            "alto",
+            "critico",
             "manutencao",
             "material,servico",
             "2025-08-18",
@@ -101,9 +103,9 @@ def generate_import_template():
         ["1. Campos obrigatórios (marcados com *):", ""],
         ["   • Título: Nome do pedido (ex: Compra de Laptops)", ""],
         ["   • Descrição: Detalhes do pedido (ex: 10 unidades Dell Latitude)", ""],
-        ["   • Status: Orçamento, Fase de Compra, A Caminho ou Finalizado", ""],
-        ["   • Prioridade: Baixa, Media, Alta ou Urgente", ""],
-        ["   • Impacto: Baixo, Medio ou Alto", ""],
+        ["   • Status: Aberto, Em Cotação, Aprovado, Pedido Emitido, Recebido ou Cancelado", ""],
+        ["   • Prioridade: Urgente, Necessário ou Planejado", ""],
+        ["   • Impacto: Crítico, Alto, Médio ou Baixo", ""],
         ["   • Classe: Ensino ou Manutenção", ""],
         ["   • Categoria: Material, Serviço ou Material,Serviço", ""],
         ["   • Data: Formato brasileiro (DD/MM/AAAA) ou AAAA-MM-DD", ""],
@@ -114,8 +116,9 @@ def generate_import_template():
         ["   • Nomes: O sistema aceita letras maiúsculas ou minúsculas e ignora espaços extras", ""],
         ["", ""],
         ["3. Exemplos de Valores Aceitos:", ""],
-        ["   • Status: 'orcamento' ou 'Orçamento' ou 'ORÇAMENTO'", ""],
-        ["   • Prioridade: 'media' ou 'Média' ou 'MEDIA'", ""],
+        ["   • Status: 'aberto' ou 'Aberto' ou 'Em Cotação'", ""],
+        ["   • Prioridade: 'urgente' ou 'Urgente' ou 'Necessário'", ""],
+        ["   • Impacto: 'critico' ou 'Crítico (Paralisa)' ou 'Médio'", ""],
         ["   • Categoria: 'material' ou 'Material, Serviço'", ""],
         ["", ""],
         ["4. Limites:", ""],
@@ -160,14 +163,30 @@ def process_import_file(file_path, current_user):
         priority_map = {p[1].lower(): p[0] for p in AcquisitionRequest.PRIORITY_CHOICES}
         priority_map.update({p[0].lower(): p[0] for p in AcquisitionRequest.PRIORITY_CHOICES})
         
-        impact_map = {i[1].lower(): i[0] for i in AcquisitionRequest.IMPACT_CHOICES}
-        impact_map.update({i[0].lower(): i[0] for i in AcquisitionRequest.IMPACT_CHOICES})
+        impact_map = {
+            'baixo': 'baixo', 'baixo ': 'baixo', ' baixo': 'baixo',
+            'medio': 'medio', 'médio': 'medio', 'medio ': 'medio', ' médio': 'medio',
+            'alto': 'alto', 'alto ': 'alto', ' alto': 'alto',
+            'critico': 'critico', 'crítico': 'critico', 'critico ': 'critico', ' crítico': 'critico'
+        }
         
         classe_map = {
             'ensino': 'ensino', 'manutenção': 'manutencao', 'manutencao': 'manutencao',
-            'manutenção ': 'manutencao', ' ensino': 'ensino'
+            'manutenção ': 'manutencao', ' ensino': 'ensino', 'ensino ': 'ensino'
         }
         
+        # Category map for multi-select
+        def parse_category(val):
+            if not val: return "material"
+            val = str(val).lower()
+            parts = [p.strip() for p in val.replace(';', ',').split(',')]
+            final_parts = []
+            for p in parts:
+                if 'material' in p: final_parts.append('material')
+                if 'servico' in p or 'serviço' in p: final_parts.append('servico')
+            if not final_parts: return "material"
+            return ",".join(list(dict.fromkeys(final_parts))) # unique and joined
+
         # Skip header row
         for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), 2):
             if not any(row):  # Skip empty rows
@@ -193,19 +212,13 @@ def process_import_file(file_path, current_user):
             # Flexible mapping for status, priority, impact, classe
             status_val = status_map.get(str(status).strip().lower()) if status else None
             if not status_val:
-                erros.append(f"Linha {row_idx}: Status inválido '{status}'. Use: Orçamento, Fase de Compra, etc.")
+                erros.append(f"Linha {row_idx}: Status inválido '{status}'. Use: Aberto, Em Cotação, Aprovado, Pedido Emitido, Recebido, Cancelado")
                 continue
                 
-            priority_val = priority_map.get(str(prioridade).strip().lower()) if prioridade else "media"
-            impact_val = impact_map.get(str(impacto).strip().lower()) if impacto else "medio"
+            priority_val = priority_map.get(str(prioridade).strip().lower()) if prioridade else "planejado"
+            impact_val = impact_map.get(str(impacto).strip().lower()) if impacto else "baixo"
             classe_val = classe_map.get(str(classe).strip().lower()) if classe else "ensino"
-            
-            # Category validation
-            cat_val = str(categoria).strip().lower() if categoria else "material"
-            valid_cats = ['material', 'servico', 'material,servico', 'serviço', 'material,serviço']
-            if cat_val not in valid_cats:
-                cat_val = "material" # Default
-            cat_val = cat_val.replace('serviço', 'servico')
+            cat_val = parse_category(categoria)
                 
             # Validate and parse date
             try:

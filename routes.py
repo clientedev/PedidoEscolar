@@ -535,6 +535,20 @@ def edit_user(id):
     
     return render_template('user_management.html', form=form, user=user, title='Editar Usuário')
 
+@app.route('/admin/user/<int:id>/force-reset', methods=['POST'])
+@login_required
+def force_password_reset(id):
+    if not current_user.is_admin:
+        flash('Acesso negado.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    user = User.query.get_or_404(id)
+    user.needs_password_reset = True
+    db.session.commit()
+    
+    flash(f'O usuário "{user.full_name}" será solicitado a alterar a senha no próximo login.', 'success')
+    return redirect(url_for('edit_user', id=id))
+
 @app.route('/admin/user/<int:id>/toggle', methods=['POST'])
 @login_required
 def toggle_user_status(id):

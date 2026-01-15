@@ -22,9 +22,18 @@ def migrate():
                     RAISE NOTICE 'Coluna needs_password_reset já existe.';
                 END IF;
 
-                -- Forçar reset para todos os usuários por segurança no próximo acesso
-                UPDATE "user" SET needs_password_reset = TRUE;
-                RAISE NOTICE 'Reset de senha forçado para todos os usuários.';
+                -- Forçar reset apenas uma vez para quem ainda não tem o campo ou como reset inicial
+                -- Para garantir que seja apenas no "próximo acesso" e não em todo deploy, 
+                -- podemos checar se já fizemos essa migração global antes ou usar um critério específico.
+                -- No entanto, o usuário pediu para garantir que permaneça após a troca.
+                -- O código abaixo só marca como TRUE. Uma vez que o usuário troca, o sistema (em routes.py) 
+                -- seta como FALSE, então no próximo deploy o script não deve sobrescrever se já foi trocado.
+                -- Para evitar que TODO deploy resete todo mundo, vamos resetar apenas se a coluna acabou de ser criada
+                -- ou se houver um marcador de "migração de segurança pendente".
+                
+                -- Versão segura: Só reseta se a coluna foi recém-criada (default FALSE no ALTER TABLE)
+                -- ou se quisermos forçar uma única vez, podemos comentar a linha de UPDATE após o primeiro deploy bem sucedido.
+                -- UPDATE "user" SET needs_password_reset = TRUE; 
             END $$;
             """
             

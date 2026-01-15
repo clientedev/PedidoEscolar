@@ -19,7 +19,7 @@ def generate_import_template():
     
     # Headers
     headers = [
-        "Título*", "Descrição*", "Status*", "Classe*", "Categoria*", "Data da Solicitação*",
+        "Título*", "Descrição*", "Status*", "Prioridade*", "Impacto*", "Classe*", "Categoria*", "Data da Solicitação*",
         "Valor Estimado", "Valor Final", "Responsável (Nome)", "Observações"
     ]
     
@@ -44,6 +44,8 @@ def generate_import_template():
             "Compra de Material de Escritório",
             "Aquisição de canetas, papéis e materiais básicos para o escritório administrativo",
             "orcamento",
+            "media",
+            "baixo",
             "ensino",
             "material",
             "2025-08-20",
@@ -56,6 +58,8 @@ def generate_import_template():
             "Equipamento de Informática",
             "Computadores para laboratório de informática - 10 unidades",
             "fase_compra",
+            "alta",
+            "medio",
             "ensino",
             "material",
             "2025-08-15",
@@ -68,6 +72,8 @@ def generate_import_template():
             "Serviço de Manutenção e Material",
             "Reparo do sistema elétrico com fornecimento de materiais necessários",
             "orcamento",
+            "urgente",
+            "alto",
             "manutencao",
             "material,servico",
             "2025-08-18",
@@ -95,14 +101,12 @@ def generate_import_template():
         ["1. Campos obrigatórios (marcados com *):", ""],
         ["   • Título: Nome do pedido (mínimo 5 caracteres)", ""],
         ["   • Descrição: Descrição detalhada (mínimo 10 caracteres)", ""],
-        ["   • Status: Deve ser um dos valores abaixo:", ""],
+        ["   • Status: orcamento, fase_compra, a_caminho ou finalizado", ""],
+        ["   • Prioridade: baixa, media, alta ou urgente", ""],
+        ["   • Impacto: baixo, medio ou alto", ""],
         ["   • Classe: ensino ou manutencao", ""],
         ["   • Categoria: material, servico, ou material,servico (múltiplas)", ""],
         ["   • Data da Solicitação: Formato AAAA-MM-DD (ex: 2025-08-20)", ""],
-        ["     - orcamento (Orçamento)", ""],
-        ["     - fase_compra (Fase de Compra)", ""],
-        ["     - a_caminho (A Caminho)", ""],
-        ["     - finalizado (Finalizado)", ""],
         ["", ""],
         ["2. Campos opcionais:", ""],
         ["   • Valor Estimado: Valor em formato numérico (ex: 100.50)", ""],
@@ -161,7 +165,7 @@ def process_import_file(file_path, current_user):
             if not any(row):  # Skip empty rows
                 continue
                 
-            titulo, descricao, status, classe, categoria, data_solicitacao, valor_estimado, valor_final, responsavel_nome, observacoes = row[:10]
+            titulo, descricao, status, prioridade, impacto, classe, categoria, data_solicitacao, valor_estimado, valor_final, responsavel_nome, observacoes = row[:12]
             
             # Validate required fields
             if not titulo or len(str(titulo).strip()) < 5:
@@ -174,6 +178,14 @@ def process_import_file(file_path, current_user):
                 
             if not status or status not in [s[0] for s in AcquisitionRequest.STATUS_CHOICES]:
                 erros.append(f"Linha {row_idx}: Status inválido. Use: {', '.join([s[0] for s in AcquisitionRequest.STATUS_CHOICES])}")
+                continue
+                
+            if not prioridade or prioridade not in [p[0] for p in AcquisitionRequest.PRIORITY_CHOICES]:
+                erros.append(f"Linha {row_idx}: Prioridade inválida. Use: {', '.join([p[0] for p in AcquisitionRequest.PRIORITY_CHOICES])}")
+                continue
+                
+            if not impacto or impacto not in [i[0] for i in AcquisitionRequest.IMPACT_CHOICES]:
+                erros.append(f"Linha {row_idx}: Impacto inválido. Use: {', '.join([i[0] for i in AcquisitionRequest.IMPACT_CHOICES])}")
                 continue
                 
             if not classe or classe not in [c[0] for c in AcquisitionRequest.CLASSE_CHOICES]:
@@ -227,6 +239,8 @@ def process_import_file(file_path, current_user):
                 'titulo': str(titulo).strip(),
                 'descricao': str(descricao).strip(),
                 'status': status,
+                'priority': prioridade,
+                'impact': impacto,
                 'classe': classe,
                 'categoria': categoria,
                 'data_solicitacao': data_parsed,

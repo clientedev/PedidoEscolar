@@ -109,41 +109,77 @@
         <!-- Help Section -->
         <div class="card mt-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Ajuda</h5>
+                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Instruções de Preenchimento</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
                         <h6>Campos Obrigatórios:</h6>
                         <ul>
-                            <li><strong>Título:</strong> Mínimo 5 caracteres</li>
-                            <li><strong>Descrição:</strong> Mínimo 10 caracteres</li>
-                            <li><strong>Status:</strong> orcamento, fase_compra, a_caminho, ou finalizado</li>
-                            <li><strong>Classe:</strong> ensino ou manutencao</li>
-                            <li><strong>Categoria:</strong> material, servico, ou material,servico (para ambos)</li>
+                            <li><strong>Título:</strong> Mínimo 5 caracteres (Ex: Compra de Laptops Dell)</li>
+                            <li><strong>Descrição:</strong> Mínimo 10 caracteres (Detalhe o que está sendo pedido)</li>
+                            <li><strong>Status:</strong> Use exatamente: <code>orcamento</code>, <code>fase_compra</code>, <code>a_caminho</code>, ou <code>finalizado</code></li>
+                            <li><strong>Prioridade:</strong> Use: <code>baixa</code>, <code>media</code>, <code>alta</code>, ou <code>urgente</code></li>
+                            <li><strong>Impacto:</strong> Use: <code>baixo</code>, <code>medio</code>, ou <code>alto</code></li>
+                            <li><strong>Classe:</strong> Use: <code>ensino</code> ou <code>manutencao</code></li>
+                            <li><strong>Categoria:</strong> Use: <code>material</code>, <code>servico</code> ou ambos separados por vírgula <code>material,servico</code></li>
                         </ul>
                     </div>
                     <div class="col-md-6">
                         <h6>Campos Opcionais:</h6>
                         <ul>
-                            <li><strong>Valor Estimado/Final:</strong> Números com ponto decimal (ex: 123.45)</li>
-                            <li><strong>Responsável:</strong> Nome completo do usuário existente</li>
-                            <li><strong>Observações:</strong> Comentários adicionais</li>
-                            <li><strong>Data Solicitação:</strong> Formato DD/MM/AAAA (padrão: hoje)</li>
+                            <li><strong>Valor Estimado/Final:</strong> Use números com ponto (Ex: 1500.50). Não use R$ ou vírgula para decimais.</li>
+                            <li><strong>Responsável:</strong> Digite o <strong>NOME COMPLETO</strong> do usuário como está cadastrado no sistema.</li>
+                            <li><strong>Observações:</strong> Texto livre para anotações extras.</li>
+                            <li><strong>Data Solicitação:</strong> Formato DD/MM/AAAA. Se deixar vazio, será usada a data de hoje.</li>
                         </ul>
                         
-                        <div class="alert alert-info mt-3">
-                            <h6><i class="fas fa-info-circle me-2"></i>Categoria - Seleção Múltipla:</h6>
-                            <ul class="mb-0">
-                                <li><code>material</code> - Apenas Material</li>
-                                <li><code>servico</code> - Apenas Serviço</li>
-                                <li><code>material,servico</code> - Material e Serviço juntos</li>
-                            </ul>
+                        <div class="alert alert-warning mt-3">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Atenção Importante:</h6>
+                            <p class="small mb-0">O sistema valida os nomes dos responsáveis. Se o nome não coincidir exatamente com um usuário ativo, o pedido será criado sem responsável atribuído.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        {% if recent_requests %}
+        <!-- Recent Imports Table -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Pedidos Importados Recentemente</h5>
+                <span class="badge bg-info">{{ recent_requests|length }} itens</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                                <th>Criado por</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in recent_requests %}
+                            <tr>
+                                <td>#{{ req.id }}</td>
+                                <td><a href="{{ url_for('view_request', id=req.id) }}">{{ req.title }}</a></td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ req.get_status_display() }}</span>
+                                </td>
+                                <td>{{ req.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>{{ req.creator.full_name }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

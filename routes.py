@@ -760,7 +760,12 @@ def export_excel_request(id):
 def bulk_import_page():
     """Página para importação em lote"""
     form = BulkImportForm()
-    return render_template('bulk_import.html', form=form)
+    # Get recent requests for this user or all if admin
+    if current_user.is_admin:
+        recent_requests = AcquisitionRequest.query.order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+    else:
+        recent_requests = AcquisitionRequest.query.filter_by(created_by_id=current_user.id).order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+    return render_template('bulk_import.html', form=form, recent_requests=recent_requests)
 
 @app.route('/bulk-import/template')
 @login_required
@@ -802,7 +807,12 @@ def process_bulk_import():
             
             if not pedidos:
                 flash('Nenhum pedido válido encontrado no arquivo.', 'warning')
-                return render_template('bulk_import.html', form=form, errors=erros)
+                # Need to refresh recent_requests here too for the error return
+                if current_user.is_admin:
+                    recent_requests = AcquisitionRequest.query.order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+                else:
+                    recent_requests = AcquisitionRequest.query.filter_by(created_by_id=current_user.id).order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+                return render_template('bulk_import.html', form=form, errors=erros, recent_requests=recent_requests)
             
             # Create requests in database
             created_count = 0
@@ -813,6 +823,8 @@ def process_bulk_import():
                     request_obj.title = pedido_data['titulo']
                     request_obj.description = pedido_data['descricao']
                     request_obj.status = pedido_data['status']
+                    request_obj.priority = pedido_data['priority']
+                    request_obj.impact = pedido_data['impact']
                     request_obj.classe = pedido_data['classe']
                     request_obj.categoria = pedido_data['categoria']
                     request_obj.estimated_value = pedido_data['valor_estimado']
@@ -844,17 +856,35 @@ def process_bulk_import():
                 db.session.commit()
                 flash(f'{created_count} pedido(s) importado(s) com sucesso!', 'success')
                 
+                # Refresh list for success page
+                if current_user.is_admin:
+                    recent_requests = AcquisitionRequest.query.order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+                else:
+                    recent_requests = AcquisitionRequest.query.filter_by(created_by_id=current_user.id).order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+                
                 if erros:
                     flash(f'Avisos durante a importação: {len(erros)} problema(s) encontrado(s).', 'warning')
-                    return render_template('bulk_import.html', form=BulkImportForm(), errors=erros, success_count=created_count)
+                    return render_template('bulk_import.html', form=BulkImportForm(), errors=erros, success_count=created_count, recent_requests=recent_requests)
                 
-                return redirect(url_for('dashboard'))
+                return redirect(url_for('bulk_import_page'))
             else:
                 flash('Nenhum pedido foi criado devido a erros.', 'danger')
-                return render_template('bulk_import.html', form=form, errors=erros)
+                if current_user.is_admin:
+                    recent_requests = AcquisitionRequest.query.order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+                else:
+                    recent_requests = AcquisitionRequest.query.filter_by(created_by_id=current_user.id).order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+                return render_template('bulk_import.html', form=form, errors=erros, recent_requests=recent_requests)
                 
         except Exception as e:
             flash(f'Erro ao processar arquivo: {str(e)}', 'danger')
-            return render_template('bulk_import.html', form=form)
+            if current_user.is_admin:
+                recent_requests = AcquisitionRequest.query.order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+            else:
+                recent_requests = AcquisitionRequest.query.filter_by(created_by_id=current_user.id).order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+            return render_template('bulk_import.html', form=form, recent_requests=recent_requests)
     
-    return render_template('bulk_import.html', form=form)
+    if current_user.is_admin:
+        recent_requests = AcquisitionRequest.query.order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+    else:
+        recent_requests = AcquisitionRequest.query.filter_by(created_by_id=current_user.id).order_by(desc(AcquisitionRequest.created_at)).limit(10).all()
+    return render_template('bulk_import.html', form=form, recent_requests=recent_requests)

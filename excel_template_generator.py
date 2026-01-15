@@ -19,8 +19,8 @@ def generate_import_template():
     
     # Headers
     headers = [
-        "Título*", "Descrição*", "Status*", "Prioridade*", "Impacto*", "Classe*", "Categoria*", "Data da Solicitação*",
-        "Valor Estimado", "Valor Final", "Responsável (Nome)", "Observações"
+        "Título*", "Descrição*", "Status (Orçamento, Fase de Compra, etc)*", "Prioridade (Baixa, Media, Alta, Urgente)*", "Impacto (Baixo, Medio, Alto)*", "Classe (Ensino ou Manutenção)*", "Categoria (Material, Serviço)*", "Data (DD/MM/AAAA)*",
+        "Valor Estimado", "Valor Final", "Responsável (Nome Completo)", "Observações"
     ]
     
     for col, header in enumerate(headers, 1):
@@ -99,35 +99,28 @@ def generate_import_template():
         ["INSTRUÇÕES PARA IMPORTAÇÃO EM LOTE", ""],
         ["", ""],
         ["1. Campos obrigatórios (marcados com *):", ""],
-        ["   • Título: Nome do pedido (mínimo 5 caracteres)", ""],
-        ["   • Descrição: Descrição detalhada (mínimo 10 caracteres)", ""],
-        ["   • Status: orcamento, fase_compra, a_caminho ou finalizado", ""],
-        ["   • Prioridade: baixa, media, alta ou urgente", ""],
-        ["   • Impacto: baixo, medio ou alto", ""],
-        ["   • Classe: ensino ou manutencao", ""],
-        ["   • Categoria: material, servico, ou material,servico (múltiplas)", ""],
-        ["   • Data da Solicitação: Formato AAAA-MM-DD (ex: 2025-08-20)", ""],
+        ["   • Título: Nome do pedido (ex: Compra de Laptops)", ""],
+        ["   • Descrição: Detalhes do pedido (ex: 10 unidades Dell Latitude)", ""],
+        ["   • Status: Orçamento, Fase de Compra, A Caminho ou Finalizado", ""],
+        ["   • Prioridade: Baixa, Media, Alta ou Urgente", ""],
+        ["   • Impacto: Baixo, Medio ou Alto", ""],
+        ["   • Classe: Ensino ou Manutenção", ""],
+        ["   • Categoria: Material, Serviço ou Material,Serviço", ""],
+        ["   • Data: Formato brasileiro (DD/MM/AAAA) ou AAAA-MM-DD", ""],
         ["", ""],
-        ["2. Campos opcionais:", ""],
-        ["   • Valor Estimado: Valor em formato numérico (ex: 100.50)", ""],
-        ["   • Valor Final: Valor em formato numérico (ex: 95.00)", ""],
-        ["   • Responsável: Nome completo do usuário responsável", ""],
-        ["   • Observações: Comentários adicionais", ""],
+        ["2. Dicas de preenchimento:", ""],
+        ["   • Valores: Use ponto ou vírgula para decimais (ex: 1250,50 ou 1250.50)", ""],
+        ["   • Responsável: Use o NOME COMPLETO do usuário cadastrado no sistema", ""],
+        ["   • Nomes: O sistema aceita letras maiúsculas ou minúsculas e ignora espaços extras", ""],
         ["", ""],
-        ["3. Observações importantes:", ""],
-        ["   • Remova as linhas de exemplo antes de importar", ""],
-        ["   • Valores monetários devem usar ponto como separador decimal", ""],
-        ["   • Datas devem estar no formato AAAA-MM-DD", ""],
-        ["   • Se o responsável não for encontrado, o campo ficará vazio", ""],
-        ["   • Máximo de 100 pedidos por importação", ""],
-        ["   • Para categoria múltipla, use vírgula: material,servico", ""],
+        ["3. Exemplos de Valores Aceitos:", ""],
+        ["   • Status: 'orcamento' ou 'Orçamento' ou 'ORÇAMENTO'", ""],
+        ["   • Prioridade: 'media' ou 'Média' ou 'MEDIA'", ""],
+        ["   • Categoria: 'material' ou 'Material, Serviço'", ""],
         ["", ""],
-        ["4. Exemplos de categoria:", ""],
-        ["   • material: Apenas Material", ""],
-        ["   • servico: Apenas Serviço", ""],
-        ["   • material,servico: Material e Serviço juntos", ""],
-        ["", ""],
-        ["5. Status disponíveis:", ""]
+        ["4. Limites:", ""],
+        ["   • Máximo de 100 pedidos por arquivo", ""],
+        ["   • Remova as linhas de exemplo (em azul) antes de enviar", ""],
     ]
     
     # Add status list to instructions
@@ -160,89 +153,111 @@ def process_import_file(file_path, current_user):
         pedidos = []
         erros = []
         
+        # Mapping for flexible text matching
+        status_map = {s[1].lower(): s[0] for s in AcquisitionRequest.STATUS_CHOICES}
+        status_map.update({s[0].lower(): s[0] for s in AcquisitionRequest.STATUS_CHOICES})
+        
+        priority_map = {p[1].lower(): p[0] for p in AcquisitionRequest.PRIORITY_CHOICES}
+        priority_map.update({p[0].lower(): p[0] for p in AcquisitionRequest.PRIORITY_CHOICES})
+        
+        impact_map = {i[1].lower(): i[0] for i in AcquisitionRequest.IMPACT_CHOICES}
+        impact_map.update({i[0].lower(): i[0] for i in AcquisitionRequest.IMPACT_CHOICES})
+        
+        classe_map = {
+            'ensino': 'ensino', 'manutenção': 'manutencao', 'manutencao': 'manutencao',
+            'manutenção ': 'manutencao', ' ensino': 'ensino'
+        }
+        
         # Skip header row
         for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), 2):
             if not any(row):  # Skip empty rows
                 continue
-                
-            titulo, descricao, status, prioridade, impacto, classe, categoria, data_solicitacao, valor_estimado, valor_final, responsavel_nome, observacoes = row[:12]
+            
+            # Ensure row has enough columns
+            row_data = list(row) + [None] * (12 - len(row))
+            titulo, descricao, status, prioridade, impacto, classe, categoria, data_solicitacao, valor_estimado, valor_final, responsavel_nome, observacoes = row_data[:12]
+            
+            # Clean text data
+            titulo = str(titulo).strip() if titulo else ""
+            descricao = str(descricao).strip() if descricao else ""
             
             # Validate required fields
-            if not titulo or len(str(titulo).strip()) < 5:
+            if not titulo or len(titulo) < 5:
                 erros.append(f"Linha {row_idx}: Título é obrigatório e deve ter pelo menos 5 caracteres")
                 continue
                 
-            if not descricao or len(str(descricao).strip()) < 10:
+            if not descricao or len(descricao) < 10:
                 erros.append(f"Linha {row_idx}: Descrição é obrigatória e deve ter pelo menos 10 caracteres")
                 continue
-                
-            if not status or status not in [s[0] for s in AcquisitionRequest.STATUS_CHOICES]:
-                erros.append(f"Linha {row_idx}: Status inválido. Use: {', '.join([s[0] for s in AcquisitionRequest.STATUS_CHOICES])}")
+            
+            # Flexible mapping for status, priority, impact, classe
+            status_val = status_map.get(str(status).strip().lower()) if status else None
+            if not status_val:
+                erros.append(f"Linha {row_idx}: Status inválido '{status}'. Use: Orçamento, Fase de Compra, etc.")
                 continue
                 
-            if not prioridade or prioridade not in [p[0] for p in AcquisitionRequest.PRIORITY_CHOICES]:
-                erros.append(f"Linha {row_idx}: Prioridade inválida. Use: {', '.join([p[0] for p in AcquisitionRequest.PRIORITY_CHOICES])}")
-                continue
-                
-            if not impacto or impacto not in [i[0] for i in AcquisitionRequest.IMPACT_CHOICES]:
-                erros.append(f"Linha {row_idx}: Impacto inválido. Use: {', '.join([i[0] for i in AcquisitionRequest.IMPACT_CHOICES])}")
-                continue
-                
-            if not classe or classe not in [c[0] for c in AcquisitionRequest.CLASSE_CHOICES]:
-                erros.append(f"Linha {row_idx}: Classe inválida. Use: {', '.join([c[0] for c in AcquisitionRequest.CLASSE_CHOICES])}")
-                continue
-                
-            if not categoria or categoria not in [c[0] for c in AcquisitionRequest.CATEGORIA_CHOICES]:
-                erros.append(f"Linha {row_idx}: Categoria inválida. Use: {', '.join([c[0] for c in AcquisitionRequest.CATEGORIA_CHOICES])}")
-                continue
+            priority_val = priority_map.get(str(prioridade).strip().lower()) if prioridade else "media"
+            impact_val = impact_map.get(str(impacto).strip().lower()) if impacto else "medio"
+            classe_val = classe_map.get(str(classe).strip().lower()) if classe else "ensino"
+            
+            # Category validation
+            cat_val = str(categoria).strip().lower() if categoria else "material"
+            valid_cats = ['material', 'servico', 'material,servico', 'serviço', 'material,serviço']
+            if cat_val not in valid_cats:
+                cat_val = "material" # Default
+            cat_val = cat_val.replace('serviço', 'servico')
                 
             # Validate and parse date
             try:
                 if data_solicitacao:
                     from datetime import datetime
                     if isinstance(data_solicitacao, str):
-                        data_parsed = datetime.strptime(data_solicitacao, '%Y-%m-%d').date()
+                        # Try common formats
+                        for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y'):
+                            try:
+                                data_parsed = datetime.strptime(data_solicitacao.strip(), fmt).date()
+                                break
+                            except ValueError:
+                                continue
+                        else:
+                            raise ValueError
                     else:
-                        data_parsed = data_solicitacao
+                        data_parsed = data_solicitacao.date() if hasattr(data_solicitacao, 'date') else data_solicitacao
                 else:
-                    erros.append(f"Linha {row_idx}: Data da solicitação é obrigatória")
-                    continue
-            except (ValueError, TypeError):
-                erros.append(f"Linha {row_idx}: Data inválida '{data_solicitacao}'. Use formato AAAA-MM-DD")
-                continue
+                    from datetime import date
+                    data_parsed = date.today()
+            except Exception:
+                from datetime import date
+                data_parsed = date.today()
             
-            # Find responsible user
+            # Find responsible user - flexible matching
             responsible_id = None
             if responsavel_nome:
-                responsible = User.query.filter_by(full_name=responsavel_nome.strip()).first()
+                resp_name = str(responsavel_nome).strip()
+                responsible = User.query.filter(User.full_name.ilike(resp_name)).first()
                 if responsible:
                     responsible_id = responsible.id
                 else:
-                    erros.append(f"Linha {row_idx}: Responsável '{responsavel_nome}' não encontrado (será deixado vazio)")
+                    erros.append(f"Linha {row_idx}: Responsável '{responsavel_nome}' não encontrado.")
             
             # Parse values
-            try:
-                valor_estimado_parsed = float(valor_estimado) if valor_estimado else None
-            except (ValueError, TypeError):
-                valor_estimado_parsed = None
-                if valor_estimado:
-                    erros.append(f"Linha {row_idx}: Valor estimado inválido '{valor_estimado}' (será ignorado)")
-            
-            try:
-                valor_final_parsed = float(valor_final) if valor_final else None
-            except (ValueError, TypeError):
-                valor_final_parsed = None
-                if valor_final:
-                    erros.append(f"Linha {row_idx}: Valor final inválido '{valor_final}' (será ignorado)")
+            def parse_float(val):
+                if val is None or val == "": return None
+                try:
+                    return float(str(val).replace('R$', '').replace('.', '').replace(',', '.').strip())
+                except: return None
+
+            valor_estimado_parsed = parse_float(valor_estimado)
+            valor_final_parsed = parse_float(valor_final)
             
             pedidos.append({
-                'titulo': str(titulo).strip(),
-                'descricao': str(descricao).strip(),
-                'status': status,
-                'priority': prioridade,
-                'impact': impacto,
-                'classe': classe,
-                'categoria': categoria,
+                'titulo': titulo,
+                'descricao': descricao,
+                'status': status_val,
+                'priority': priority_val,
+                'impact': impact_val,
+                'classe': classe_val,
+                'categoria': cat_val,
                 'data_solicitacao': data_parsed,
                 'valor_estimado': valor_estimado_parsed,
                 'valor_final': valor_final_parsed,
@@ -251,12 +266,11 @@ def process_import_file(file_path, current_user):
                 'linha': row_idx
             })
             
-            # Limit to 100 requests
             if len(pedidos) >= 100:
-                erros.append("Limitado a 100 pedidos por importação. Pedidos excedentes foram ignorados.")
+                erros.append("Limite de 100 pedidos atingido.")
                 break
         
         return pedidos, erros
         
     except Exception as e:
-        return [], [f"Erro ao processar arquivo: {str(e)}"]
+        return [], [f"Erro crítico: {str(e)}"]

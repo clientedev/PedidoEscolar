@@ -71,6 +71,9 @@ Escola SENAI "Morvan Figueiredo"
                             <li><span class="dropdown-item-text">
                                 <small class="text-muted">{{ current_user.email }}</small>
                             </span></li>
+                            <li><a class="dropdown-item" href="{{ url_for('first_password') }}">
+                                <i class="fas fa-key me-1"></i>Alterar Senha
+                            </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li id="install-item">
                                 <a class="dropdown-item" href="#" id="install-button">

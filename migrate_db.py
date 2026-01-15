@@ -21,6 +21,10 @@ def migrate():
                 ELSE
                     RAISE NOTICE 'Coluna needs_password_reset já existe.';
                 END IF;
+
+                -- Forçar reset para todos os usuários por segurança no próximo acesso
+                UPDATE "user" SET needs_password_reset = TRUE;
+                RAISE NOTICE 'Reset de senha forçado para todos os usuários.';
             END $$;
             """
             

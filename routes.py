@@ -205,9 +205,9 @@ def logout():
 @app.route('/first-password', methods=['GET', 'POST'])
 @login_required
 def first_password():
-    # Only allow users who need password reset
-    if not current_user.needs_password_reset:
-        return redirect(url_for('dashboard'))
+    # Allow manually changing password even if not forced
+    # if not current_user.needs_password_reset:
+    #     return redirect(url_for('dashboard'))
     
     form = FirstPasswordForm()
     if form.validate_on_submit():

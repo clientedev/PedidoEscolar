@@ -10,12 +10,10 @@ from app import app, db
 from models import User, AcquisitionRequest, Attachment, StatusChange
 import resend
 
-def send_notification_email(recipient_email, recipient_name, request_id):
-    """Send notification email using Resend"""
+def send_notification_email(recipient_email, recipient_name, request_obj):
+    """Send detailed notification email using Resend"""
     api_key = os.environ.get("RESEND_API_KEY")
     from_email = os.environ.get("EMAIL_FROM")
-    
-    app.logger.debug(f"Attempting to send email to {recipient_email} using {from_email}")
     
     if not api_key or not from_email:
         app.logger.error("RESEND_API_KEY or EMAIL_FROM not configured")
@@ -23,14 +21,35 @@ def send_notification_email(recipient_email, recipient_name, request_id):
         
     try:
         resend.api_key = api_key
+        
+        # Format specifications
+        specs = f"""
+        <ul>
+            <li><strong>ID:</strong> #{request_obj.id}</li>
+            <li><strong>Título:</strong> {request_obj.title}</li>
+            <li><strong>Status:</strong> {request_obj.get_status_display()}</li>
+            <li><strong>Prioridade:</strong> {request_obj.get_priority_display()}</li>
+            <li><strong>Impacto:</strong> {request_obj.get_impact_display()}</li>
+            <li><strong>Classe:</strong> {request_obj.get_classe_display()}</li>
+            <li><strong>Categoria:</strong> {request_obj.get_categoria_display()}</li>
+            <li><strong>Data do Pedido:</strong> {request_obj.request_date.strftime('%d/%m/%Y')}</li>
+            <li><strong>Valor Estimado:</strong> R$ {request_obj.estimated_value or 0:,.2f}</li>
+            <li><strong>Descrição:</strong> {request_obj.description}</li>
+        </ul>
+        """
+        
         params = {
             "from": from_email,
             "to": [recipient_email],
-            "subject": f"Novo pedido atribuído: #{request_id}",
-            "html": f"<p>Olá {recipient_name},</p><p>Um novo pedido (ID: {request_id}) foi atribuído a você no sistema.</p>",
+            "subject": f"Atualização de Pedido: {request_obj.title} (ID: #{request_obj.id})",
+            "html": f"""
+            <p>Olá <strong>{recipient_name}</strong>,</p>
+            <p>O seguinte pedido de aquisição foi atribuído ou atualizado para você:</p>
+            {specs}
+            <p>Por favor, acesse o sistema para mais detalhes.</p>
+            """,
         }
         r = resend.Emails.send(params)
-        app.logger.info(f"Email sent successfully: {r}")
         return True, recipient_email
     except Exception as e:
         app.logger.error(f"Failed to send email: {e}")
@@ -314,7 +333,7 @@ def new_request():
         if request_obj.responsible_id:
             responsible_user = db.session.get(User, request_obj.responsible_id)
             if responsible_user and responsible_user.email:
-                success, info = send_notification_email(responsible_user.email, responsible_user.full_name, request_obj.id)
+                success, info = send_notification_email(responsible_user.email, responsible_user.full_name, request_obj)
                 if success:
                     flash_message += f' E-mail de notificação enviado para: {info}'
                 else:
@@ -412,7 +431,20 @@ def edit_request(id):
         
         try:
             db.session.commit()
-            flash(f'Pedido "{request_obj.title}" atualizado!', 'success')
+            
+            flash_message = f'Pedido "{request_obj.title}" atualizado!'
+            
+            # Envio de e-mail automático após edição do pedido
+            if request_obj.responsible_id:
+                responsible_user = db.session.get(User, request_obj.responsible_id)
+                if responsible_user and responsible_user.email:
+                    success, info = send_notification_email(responsible_user.email, responsible_user.full_name, request_obj)
+                    if success:
+                        flash_message += f' E-mail de notificação enviado para: {info}'
+                    else:
+                        flash_message += f' (Falha ao enviar e-mail: {info})'
+            
+            flash(flash_message, 'success')
             return redirect(url_for('view_request', id=id))
         except Exception as e:
             db.session.rollback()

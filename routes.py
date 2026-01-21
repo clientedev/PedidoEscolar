@@ -8,6 +8,30 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import or_, desc, func
 from app import app, db
 from models import User, AcquisitionRequest, Attachment, StatusChange
+import resend
+
+def send_notification_email(recipient_email, recipient_name, request_id):
+    """Send notification email using Resend"""
+    api_key = os.environ.get("RESEND_API_KEY")
+    from_email = os.environ.get("EMAIL_FROM")
+    
+    if not api_key or not from_email:
+        app.logger.error("RESEND_API_KEY or EMAIL_FROM not configured")
+        return False
+        
+    try:
+        resend.api_key = api_key
+        params = {
+            "from": from_email,
+            "to": [recipient_email],
+            "subject": f"Novo pedido atribuído: #{request_id}",
+            "html": f"<p>Olá {recipient_name},</p><p>Um novo pedido (ID: {request_id}) foi atribuído a você no sistema.</p>",
+        }
+        resend.Emails.send(params)
+        return True
+    except Exception as e:
+        app.logger.error(f"Failed to send email: {e}")
+        return False
 from forms import LoginForm, AcquisitionRequestForm, EditRequestForm, UserForm, SearchForm, FirstPasswordForm, BulkImportForm
 from pdf_generator import generate_request_pdf, generate_general_report
 from excel_generator import generate_requests_excel, generate_request_excel
@@ -280,6 +304,12 @@ def new_request():
             app.logger.error(f"Erro no upload (novo): {e}")
         
         db.session.commit()
+        
+        # Envio de e-mail automático após criação do pedido
+        if request_obj.responsible_id:
+            responsible_user = User.query.get(request_obj.responsible_id)
+            if responsible_user and responsible_user.email:
+                send_notification_email(responsible_user.email, responsible_user.full_name, request_obj.id)
         
         flash_message = f'Pedido de aquisição "{request_obj.title}" criado com sucesso!'
         if uploaded_files:

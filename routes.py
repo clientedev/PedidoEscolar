@@ -312,7 +312,7 @@ def new_request():
         
         # Envio de e-mail automático após criação do pedido
         if request_obj.responsible_id:
-            responsible_user = User.query.get(request_obj.responsible_id)
+            responsible_user = db.session.get(User, request_obj.responsible_id)
             if responsible_user and responsible_user.email:
                 success, info = send_notification_email(responsible_user.email, responsible_user.full_name, request_obj.id)
                 if success:

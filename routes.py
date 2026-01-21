@@ -15,9 +15,11 @@ def send_notification_email(recipient_email, recipient_name, request_id):
     api_key = os.environ.get("RESEND_API_KEY")
     from_email = os.environ.get("EMAIL_FROM")
     
+    app.logger.debug(f"Attempting to send email to {recipient_email} using {from_email}")
+    
     if not api_key or not from_email:
         app.logger.error("RESEND_API_KEY or EMAIL_FROM not configured")
-        return False
+        return False, "Configuração de e-mail ausente"
         
     try:
         resend.api_key = api_key
@@ -27,11 +29,12 @@ def send_notification_email(recipient_email, recipient_name, request_id):
             "subject": f"Novo pedido atribuído: #{request_id}",
             "html": f"<p>Olá {recipient_name},</p><p>Um novo pedido (ID: {request_id}) foi atribuído a você no sistema.</p>",
         }
-        resend.Emails.send(params)
-        return True
+        r = resend.Emails.send(params)
+        app.logger.info(f"Email sent successfully: {r}")
+        return True, recipient_email
     except Exception as e:
         app.logger.error(f"Failed to send email: {e}")
-        return False
+        return False, str(e)
 from forms import LoginForm, AcquisitionRequestForm, EditRequestForm, UserForm, SearchForm, FirstPasswordForm, BulkImportForm
 from pdf_generator import generate_request_pdf, generate_general_report
 from excel_generator import generate_requests_excel, generate_request_excel
@@ -305,13 +308,17 @@ def new_request():
         
         db.session.commit()
         
+        flash_message = f'Pedido de aquisição "{request_obj.title}" criado com sucesso!'
+        
         # Envio de e-mail automático após criação do pedido
         if request_obj.responsible_id:
             responsible_user = User.query.get(request_obj.responsible_id)
             if responsible_user and responsible_user.email:
-                send_notification_email(responsible_user.email, responsible_user.full_name, request_obj.id)
-        
-        flash_message = f'Pedido de aquisição "{request_obj.title}" criado com sucesso!'
+                success, info = send_notification_email(responsible_user.email, responsible_user.full_name, request_obj.id)
+                if success:
+                    flash_message += f' E-mail de notificação enviado para: {info}'
+                else:
+                    flash_message += f' (Falha ao enviar e-mail: {info})'
         if uploaded_files:
             flash_message += f' Arquivos anexados: {", ".join(uploaded_files)}'
         flash(flash_message, 'success')

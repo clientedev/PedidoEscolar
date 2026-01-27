@@ -71,11 +71,13 @@
                         <strong>Classe:</strong>
                         {% set classe_classes = {
                             'ensino': 'info',
-                            'manutencao': 'secondary'
+                            'manutencao': 'secondary',
+                            'administrativo': 'primary'
                         } %}
                         {% set classe_names = {
                             'ensino': 'Ensino',
-                            'manutencao': 'Manutenção'
+                            'manutencao': 'Manutenção',
+                            'administrativo': 'Administrativo'
                         } %}
                         <span class="badge bg-{{ classe_classes.get(request_obj.classe, 'secondary') }} text-white ms-1">
                             {{ classe_names.get(request_obj.classe, request_obj.classe) }}

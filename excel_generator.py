@@ -64,7 +64,7 @@ def generate_requests_excel(requests=None):
         # Get classe and categoria display names
         classe_display = ""
         if hasattr(request, 'classe') and request.classe:
-            classe_names = {'ensino': 'Ensino', 'manutencao': 'Manutenção'}
+            classe_names = {'ensino': 'Ensino', 'manutencao': 'Manutenção', 'administrativo': 'Administrativo'}
             classe_display = classe_names.get(request.classe, request.classe)
             
         categoria_display = ""
@@ -114,6 +114,8 @@ def generate_requests_excel(requests=None):
                         cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")  # Light blue
                     elif request.classe == 'manutencao':
                         cell.fill = PatternFill(start_color="E6E6FA", end_color="E6E6FA", fill_type="solid")  # Light lavender
+                    elif request.classe == 'administrativo':
+                        cell.fill = PatternFill(start_color="FFFACD", end_color="FFFACD", fill_type="solid")  # Lemon Chiffon
                         
             # Color coding for Categoria (column 6)  
             elif col == 6:

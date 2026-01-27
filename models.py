@@ -78,7 +78,8 @@ class AcquisitionRequest(db.Model):
     # Classe choices
     CLASSE_CHOICES = [
         ('ensino', 'Ensino'),
-        ('manutencao', 'Manutenção')
+        ('manutencao', 'Manutenção'),
+        ('administrativo', 'Administrativo')
     ]
     
     # Categoria choices

@@ -21,7 +21,7 @@ def generate_import_template():
     headers = [
         "Título*", "Descrição*", "Status (Aberto, Em Cotação, Aprovado, Pedido Emitido, Recebido, Cancelado)*", 
         "Prioridade (Urgente, Necessário, Planejado)*", "Impacto (Crítico, Alto, Médio, Baixo)*", 
-        "Classe (Ensino ou Manutenção)*", "Categoria (Material, Serviço)*", "Data (DD/MM/AAAA)*",
+        "Classe (Ensino, Manutenção ou Administrativo)*", "Categoria (Material, Serviço)*", "Data (DD/MM/AAAA)*",
         "Valor Estimado", "Valor Final", "Responsável (Nome Completo)", "Observações"
     ]
     
@@ -106,7 +106,7 @@ def generate_import_template():
         ["   • Status: Aberto, Em Cotação, Aprovado, Pedido Emitido, Recebido ou Cancelado", ""],
         ["   • Prioridade: Urgente, Necessário ou Planejado", ""],
         ["   • Impacto: Crítico, Alto, Médio ou Baixo", ""],
-        ["   • Classe: Ensino ou Manutenção", ""],
+        ["   • Classe: Ensino, Manutenção ou Administrativo", ""],
         ["   • Categoria: Material, Serviço ou Material,Serviço", ""],
         ["   • Data: Formato brasileiro (DD/MM/AAAA) ou AAAA-MM-DD", ""],
         ["", ""],
@@ -119,7 +119,7 @@ def generate_import_template():
         ["   • Prioridade: 'Urgente', 'Necessário', 'Planejado'", ""],
         ["   • Impacto: 'Crítico', 'Alto', 'Médio', 'Baixo'", ""],
         ["   • Status: 'Aberto', 'Em Cotação', 'Aprovado', 'Pedido Emitido', 'Recebido', 'Cancelado'", ""],
-        ["   • Classe: 'Ensino', 'Manutenção'", ""],
+        ["   • Classe: 'Ensino', 'Manutenção', 'Administrativo'", ""],
         ["   • Categoria: 'Material', 'Serviço', 'Material,Serviço'", ""],
         ["", ""],
         ["4. Observações importantes:", ""],
@@ -174,6 +174,7 @@ def process_import_file(file_path, current_user):
         
         classe_map = {
             'ensino': 'ensino', 'manutenção': 'manutencao', 'manutencao': 'manutencao',
+            'administrativo': 'administrativo', 'adm': 'administrativo',
             'manutenção ': 'manutencao', ' ensino': 'ensino', 'ensino ': 'ensino'
         }
         

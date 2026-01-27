@@ -166,6 +166,12 @@ def dashboard():
         count = AcquisitionRequest.query.filter_by(status=status_code).count()
         status_counts[status_name] = count
     
+    # Get counts per class
+    classe_counts = {}
+    for classe_code, classe_name in AcquisitionRequest.CLASSE_CHOICES:
+        count = AcquisitionRequest.query.filter_by(classe=classe_code).count()
+        classe_counts[classe_name] = count
+    
     # Set form defaults from URL parameters
     search_form.search.data = search
     search_form.status_filter.data = status_filter
@@ -196,6 +202,7 @@ def dashboard():
                          search_form=search_form,
                          total_requests=total_requests,
                          status_counts=status_counts,
+                         classe_counts=classe_counts,
                          total_estimated=total_estimated,
                          total_final=total_final,
                          current_search=search,

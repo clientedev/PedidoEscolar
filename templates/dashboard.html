@@ -53,12 +53,27 @@
         </div>
     </div>
     {% for status_name, count in status_counts.items() %}
-    <div class="col-md-3">
-        <div class="card text-center">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
             <div class="card-body">
                 <i class="fas fa-clock fa-2x text-info mb-2"></i>
                 <h6 class="card-title">{{ status_name }}</h6>
                 <h4 class="text-info">{{ count }}</h4>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Class Statistics -->
+<div class="row mb-4">
+    {% for classe_name, count in classe_counts.items() %}
+    <div class="col-md-4">
+        <div class="card text-center border-primary">
+            <div class="card-body">
+                <i class="fas fa-tags fa-2x text-primary mb-2"></i>
+                <h6 class="card-title">Classe: {{ classe_name }}</h6>
+                <h4 class="text-primary">{{ count }}</h4>
             </div>
         </div>
     </div>
@@ -179,11 +194,13 @@
                             <td data-label="Classe">
                                 {% set classe_classes = {
                                     'ensino': 'info',
-                                    'manutencao': 'secondary'
+                                    'manutencao': 'secondary',
+                                    'administrativo': 'primary'
                                 } %}
                                 {% set classe_names = {
                                     'ensino': 'Ensino',
-                                    'manutencao': 'Manutenção'
+                                    'manutencao': 'Manutenção',
+                                    'administrativo': 'Administrativo'
                                 } %}
                                 <span class="badge bg-{{ classe_classes.get(request.classe, 'secondary') }} text-white">
                                     {{ classe_names.get(request.classe, request.classe) }}

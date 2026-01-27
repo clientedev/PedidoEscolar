@@ -220,6 +220,54 @@ def dashboard():
                          current_date_from=date_from,
                          current_date_to=date_to)
 
+@app.route('/analytics')
+@login_required
+def analytics():
+    # Basic stats
+    total_requests = AcquisitionRequest.query.count()
+    
+    # Status distribution
+    status_data = {}
+    for status_code, status_name in AcquisitionRequest.STATUS_CHOICES:
+        count = AcquisitionRequest.query.filter_by(status=status_code).count()
+        status_data[status_name] = count
+        
+    # Class distribution (Values)
+    class_values = {}
+    for class_code, class_name in AcquisitionRequest.CLASSE_CHOICES:
+        total = db.session.query(func.sum(AcquisitionRequest.estimated_value)).filter_by(classe=class_code).scalar() or 0
+        class_values[class_name] = float(total)
+        
+    # Priority distribution
+    priority_data = {}
+    for prio_code, prio_name in AcquisitionRequest.PRIORITY_CHOICES:
+        count = AcquisitionRequest.query.filter_by(priority=prio_code).count()
+        priority_data[prio_name] = count
+
+    # Requests over time (last 30 days)
+    from datetime import timedelta
+    thirty_days_ago = date.today() - timedelta(days=30)
+    history_query = db.session.query(
+        AcquisitionRequest.request_date, 
+        func.count(AcquisitionRequest.id)
+    ).filter(AcquisitionRequest.request_date >= thirty_days_ago)\
+     .group_by(AcquisitionRequest.request_date)\
+     .order_by(AcquisitionRequest.request_date).all()
+    
+    history_labels = [d[0].strftime('%d/%m') for d in history_query]
+    history_values = [d[1] for d in history_query]
+
+    return render_template('analytics.html',
+                         status_labels=list(status_data.keys()),
+                         status_values=list(status_data.values()),
+                         class_labels=list(class_values.keys()),
+                         class_values=list(class_values.values()),
+                         priority_labels=list(priority_data.keys()),
+                         priority_values=list(priority_data.values()),
+                         history_labels=history_labels,
+                         history_values=history_values,
+                         total_requests=total_requests)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:

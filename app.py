@@ -48,8 +48,8 @@ with app.app_context():
     
     # Run automatic migrations
     try:
-        from migrate_db import migrate
-        migrate()
+        import run_deploy_migrations
+        run_deploy_migrations.run_migrations()
     except Exception as e:
         app.logger.error(f"Migration error: {e}")
     

@@ -31,6 +31,15 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
+@app.template_filter('dict_replace')
+def dict_replace_filter(d, key, value):
+    new_dict = d.to_dict() if hasattr(d, 'to_dict') else dict(d)
+    if value is None:
+        new_dict.pop(key, None)
+    else:
+        new_dict[key] = value
+    return new_dict
+
 # Initialize extensions
 db.init_app(app)
 login_manager.init_app(app)

@@ -85,12 +85,17 @@
             'Manutenção': '#00d1ff',
             'Administrativo': '#ffc107'
         } %}
+        {% set classe_icons = {
+            'Ensino': 'fa-graduation-cap',
+            'Manutenção': 'fa-screwdriver-wrench',
+            'Administrativo': 'fa-briefcase'
+        } %}
         {% for classe_name, stats in classe_stats.items() %}
         <div class="col-md-4">
             <div class="card border-0 bg-transparent h-100 p-0">
                 <div class="card-body p-0 d-flex flex-column align-items-center">
                     <div class="mb-2" style="color: {{ classe_colors.get(classe_name, '#7b61ff') }};">
-                        <i class="fas fa-circle-nodes fa-2x"></i>
+                        <i class="fas {{ classe_icons.get(classe_name, 'fa-tag') }} fa-2x"></i>
                     </div>
                     <h6 class="text-white mb-1 fw-medium small">{{ classe_name }}</h6>
                     <h4 class="fw-bold mb-1" style="color: {{ classe_colors.get(classe_name, '#7b61ff') }};">

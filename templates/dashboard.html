@@ -76,13 +76,13 @@
         'Manutenção': 'fa-tag',
         'Administrativo': 'fa-tag'
     } %}
-    {% for classe_name, count in classe_counts.items() %}
+    {% for classe_name, stats in classe_stats.items() %}
     <div class="col-md-3">
         <div class="card text-center h-100 border-0 bg-transparent">
             <div class="card-body p-2">
                 <i class="fas {{ classe_icons.get(classe_name, 'fa-tag') }} fa-2x mb-3" style="color: #7b61ff !important;"></i>
                 <h6 class="card-title text-white mb-2" style="font-size: 0.85rem; font-weight: 500;">{{ classe_name }}</h6>
-                <h4 class="fw-bold" style="color: #7b61ff !important;">{{ count }}</h4>
+                <h4 class="fw-bold" style="color: #7b61ff !important;">R$ {{ "%.2f"|format(stats.total_value) }}</h4>
             </div>
         </div>
     </div>

@@ -53,12 +53,12 @@
         </div>
     </div>
     {% for status_name, count in status_counts.items() %}
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="fas fa-clock fa-2x text-info mb-2"></i>
-                <h6 class="card-title">{{ status_name }}</h6>
-                <h4 class="text-info">{{ count }}</h4>
+    <div class="col-md mb-3">
+        <div class="card text-center h-100 border-0 bg-transparent">
+            <div class="card-body p-2">
+                <i class="fas fa-clock fa-2x mb-3" style="color: #00d1ff;"></i>
+                <h6 class="card-title text-white mb-2" style="font-size: 0.9rem; font-weight: 500;">{{ status_name }}</h6>
+                <h4 class="fw-bold" style="color: #00d1ff;">{{ count }}</h4>
             </div>
         </div>
     </div>
@@ -66,14 +66,19 @@
 </div>
 
 <!-- Class Statistics -->
-<div class="row mb-4">
+<div class="row mb-4 justify-content-center">
+    {% set classe_icons = {
+        'Ensino': 'fa-tag',
+        'Manutenção': 'fa-tag',
+        'Administrativo': 'fa-tag'
+    } %}
     {% for classe_name, count in classe_counts.items() %}
-    <div class="col-md-4 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="fas fa-tags fa-2x text-primary mb-2"></i>
-                <h6 class="card-title">{{ classe_name }}</h6>
-                <h4 class="text-primary">{{ count }}</h4>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100 border-0 bg-transparent">
+            <div class="card-body p-2">
+                <i class="fas {{ classe_icons.get(classe_name, 'fa-tag') }} fa-2x mb-3" style="color: #7b61ff !important;"></i>
+                <h6 class="card-title text-white mb-2" style="font-size: 0.9rem; font-weight: 500;">{{ classe_name }}</h6>
+                <h4 class="fw-bold" style="color: #7b61ff !important;">{{ count }}</h4>
             </div>
         </div>
     </div>

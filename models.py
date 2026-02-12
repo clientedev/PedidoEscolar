@@ -137,7 +137,7 @@ class AcquisitionRequest(db.Model):
     
     def is_in_progress(self):
         """Verifica se o pedido está em andamento"""
-        return self.status not in ['recebido', 'cancelado']
+        return self.status not in ['recebido', 'finalizado', 'cancelado']
     
     def is_completed(self):
         """Verifica se o pedido foi finalizado"""

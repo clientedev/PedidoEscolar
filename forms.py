@@ -24,6 +24,7 @@ class AcquisitionRequestForm(FlaskForm):
     final_value = DecimalField('Valor Final (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     responsible_id = SelectField('Responsável pela Cotação', coerce=int, validators=[Optional()])
     request_date = DateField('Data da Solicitação', validators=[DataRequired()])
+    delivery_deadline = DateField('Prazo de Entrega', validators=[Optional()])
     attachments = MultipleFileField('Anexar Orçamentos', validators=[
         FileAllowed(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'], 
                    'Apenas arquivos PDF, Word, Excel e imagens são permitidos.')
@@ -70,6 +71,7 @@ class EditRequestForm(FlaskForm):
     final_value = DecimalField('Valor Final (R$)', validators=[Optional(), NumberRange(min=0)], places=2)
     responsible_id = SelectField('Responsável pela Cotação', coerce=int, validators=[Optional()])
     request_date = DateField('Data da Solicitação', validators=[DataRequired()])
+    delivery_deadline = DateField('Prazo de Entrega', validators=[Optional()])
     attachments = MultipleFileField('Anexar Novos Orçamentos')
     change_comments = TextAreaField('Comentários sobre a alteração', validators=[Optional(), Length(max=500)])
     submit = SubmitField('Atualizar Pedido')

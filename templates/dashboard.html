@@ -10,20 +10,24 @@
             <p class="text-muted small mb-0">Estatísticas em tempo real</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ url_for('analytics') }}" class="btn btn-sm btn-outline-info px-3 border-0 bg-dark-subtle shadow-sm">
+            <a href="{{ url_for('analytics') }}"
+                class="btn btn-sm btn-outline-info px-3 border-0 bg-dark-subtle shadow-sm">
                 <i class="fas fa-chart-pie me-1"></i>Ver Gráficos
             </a>
             <div class="dropdown">
-                <button class="btn btn-sm btn-outline-light dropdown-toggle border-0 bg-transparent" type="button" data-bs-toggle="dropdown">
+                <button class="btn btn-sm btn-outline-light dropdown-toggle border-0 bg-transparent" type="button"
+                    data-bs-toggle="dropdown">
                     <i class="fas fa-download me-1"></i>Exportar
                 </button>
                 <ul class="dropdown-menu dropdown-menu-dark shadow border-0 small">
-                    <li><a class="dropdown-item py-1" href="{{ url_for('generate_filtered_pdf', search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
-                        <i class="fas fa-file-pdf me-2 text-danger"></i>PDF
-                    </a></li>
-                    <li><a class="dropdown-item py-1" href="{{ url_for('export_excel_filtered', search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
-                        <i class="fas fa-file-excel me-2 text-success"></i>Excel
-                    </a></li>
+                    <li><a class="dropdown-item py-1"
+                            href="{{ url_for('generate_filtered_pdf', search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
+                            <i class="fas fa-file-pdf me-2 text-danger"></i>PDF
+                        </a></li>
+                    <li><a class="dropdown-item py-1"
+                            href="{{ url_for('export_excel_filtered', search=current_search, status_filter=current_status_filter, priority_filter=current_priority_filter, impact_filter=current_impact_filter, classe_filter=current_classe_filter, categoria_filter=current_categoria_filter, responsible_filter=current_responsible_filter, date_from=current_date_from, date_to=current_date_to) }}">
+                            <i class="fas fa-file-excel me-2 text-success"></i>Excel
+                        </a></li>
                 </ul>
             </div>
             <a href="{{ url_for('new_request') }}" class="btn btn-sm btn-primary px-3 shadow-sm">
@@ -41,7 +45,8 @@
                         <i class="fas fa-layer-group fa-lg text-primary"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted text-uppercase mb-0 small fw-semibold" style="font-size: 0.7rem;">Total de Pedidos</h6>
+                        <h6 class="text-muted text-uppercase mb-0 small fw-semibold" style="font-size: 0.7rem;">Total de
+                            Pedidos</h6>
                         <h4 class="mb-0 text-white fw-bold">{{ total_requests }}</h4>
                     </div>
                 </div>
@@ -54,8 +59,10 @@
                         <i class="fas fa-file-invoice-dollar fa-lg text-success"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted text-uppercase mb-0 small fw-semibold" style="font-size: 0.7rem;">Valor Estimado</h6>
-                        <h4 class="mb-0 text-white fw-bold">R$ {{ "{:,.2f}".format(total_estimated).replace(',', 'X').replace('.', ',').replace('X', '.') }}</h4>
+                        <h6 class="text-muted text-uppercase mb-0 small fw-semibold" style="font-size: 0.7rem;">Valor
+                            Estimado</h6>
+                        <h4 class="mb-0 text-white fw-bold">R$ {{ "{:,.2f}".format(total_estimated).replace(',',
+                            'X').replace('.', ',').replace('X', '.') }}</h4>
                     </div>
                 </div>
             </div>
@@ -67,30 +74,32 @@
                         <i class="fas fa-check-double fa-lg text-warning"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted text-uppercase mb-0 small fw-semibold" style="font-size: 0.7rem;">Valor Final</h6>
-                        <h4 class="mb-0 text-white fw-bold">R$ {{ "{:,.2f}".format(total_final).replace(',', 'X').replace('.', ',').replace('X', '.') }}</h4>
+                        <h6 class="text-muted text-uppercase mb-0 small fw-semibold" style="font-size: 0.7rem;">Valor
+                            Final</h6>
+                        <h4 class="mb-0 text-white fw-bold">R$ {{ "{:,.2f}".format(total_final).replace(',',
+                            'X').replace('.', ',').replace('X', '.') }}</h4>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Class Breakdown (Financial Focus) -->
+    <!-- Class Breakdown -->
     <div class="mb-3 d-flex align-items-center">
         <h6 class="mb-0 text-white me-3 small text-uppercase fw-bold opacity-75">Investimento por Classe</h6>
         <div class="flex-grow-1 border-bottom border-secondary opacity-25"></div>
     </div>
-    
+
     <div class="row g-3 mb-4">
         {% set classe_colors = {
-            'Ensino': '#7b61ff',
-            'Manutenção': '#00d1ff',
-            'Administrativo': '#ffc107'
+        'Ensino': '#7b61ff',
+        'Manutenção': '#00d1ff',
+        'Administrativo': '#ffc107'
         } %}
         {% set classe_icons = {
-            'Ensino': 'fa-graduation-cap',
-            'Manutenção': 'fa-screwdriver-wrench',
-            'Administrativo': 'fa-briefcase'
+        'Ensino': 'fa-graduation-cap',
+        'Manutenção': 'fa-screwdriver-wrench',
+        'Administrativo': 'fa-briefcase'
         } %}
         {% for classe_name, stats in classe_stats.items() %}
         <div class="col-md-4">
@@ -101,9 +110,11 @@
                     </div>
                     <h6 class="text-white mb-1 fw-medium small">{{ classe_name }}</h6>
                     <h4 class="fw-bold mb-1" style="color: {{ classe_colors.get(classe_name, '#7b61ff') }};">
-                        R$ {{ "{:,.2f}".format(stats.total_value).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+                        R$ {{ "{:,.2f}".format(stats.total_value).replace(',', 'X').replace('.', ',').replace('X', '.')
+                        }}
                     </h4>
-                    <span class="badge rounded-pill bg-secondary bg-opacity-25 text-muted px-2 py-1" style="font-size: 0.65rem;">
+                    <span class="badge rounded-pill bg-secondary bg-opacity-25 text-muted px-2 py-1"
+                        style="font-size: 0.65rem;">
                         {{ stats.count }} pedidos
                     </span>
                 </div>
@@ -112,168 +123,403 @@
         {% endfor %}
     </div>
 
-    <!-- Status Toggles (Clean Horizontal Bar) -->
+    <!-- Status Toggles -->
     <div class="mb-4">
         <div class="card border-0 bg-dark-subtle p-1 shadow-sm">
             <div class="card-body p-0 d-flex overflow-auto gap-1 scroll-hide">
                 {% for status_name, count in status_counts.items() %}
                 <div class="flex-fill text-center p-2 rounded transition-hover" style="min-width: 90px;">
                     <div class="text-info fw-bold h6 mb-0">{{ count }}</div>
-                    <div class="text-muted fw-bold" style="font-size: 0.6rem; text-transform: uppercase; white-space: nowrap;">{{ status_name }}</div>
+                    <div class="text-muted fw-bold"
+                        style="font-size: 0.6rem; text-transform: uppercase; white-space: nowrap;">{{ status_name }}
+                    </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
     </div>
 
-    <!-- Filters & Table Section -->
-    <div class="row g-4">
-        <!-- Compact Filters -->
-        <div class="col-lg-12">
-            <div class="card border-0 bg-dark-subtle shadow-sm mb-3">
-                <div class="card-body p-3">
-                    <form method="GET" class="row g-2 align-items-end">
-                        <div class="col-6 col-md-3">
-                            <label class="form-label text-muted mb-1" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Busca</label>
-                            {{ search_form.search(class="form-control form-control-sm bg-dark border-0 text-white", placeholder="Título...") }}
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <label class="form-label text-muted mb-1" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Status</label>
-                            {{ search_form.status_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <label class="form-label text-muted mb-1" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Prioridade</label>
-                            {{ search_form.priority_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <label class="form-label text-muted mb-1" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Impacto</label>
-                            {{ search_form.impact_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label text-muted mb-1" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Responsável</label>
-                            {{ search_form.responsible_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <label class="form-label text-muted mb-1" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Classe</label>
-                            {{ search_form.classe_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <label class="form-label text-muted mb-1" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Categoria</label>
-                            {{ search_form.categoria_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <label class="form-label text-muted mb-1" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">De</label>
-                            {{ search_form.date_from(class="form-control form-control-sm bg-dark border-0 text-white") }}
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <label class="form-label text-muted mb-1" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Até</label>
-                            {{ search_form.date_to(class="form-control form-control-sm bg-dark border-0 text-white") }}
-                        </div>
-                        <div class="col-12 col-md-2 d-flex gap-1">
-                            <button type="submit" class="btn btn-sm btn-primary w-100">Filtrar</button>
-                            <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-dark w-100">Limpar</a>
-                        </div>
-                    </form>
+    <!-- Filters -->
+    <div class="card border-0 bg-dark-subtle shadow-sm mb-3">
+        <div class="card-body p-3">
+            <form method="GET" class="row g-2 align-items-end">
+                <div class="col-6 col-md-3">
+                    <label class="form-label text-muted mb-1"
+                        style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Busca</label>
+                    {{ search_form.search(class="form-control form-control-sm bg-dark border-0 text-white",
+                    placeholder="Título...") }}
                 </div>
-            </div>
-        </div>
-
-        <!-- Clean Requests Table -->
-        <div class="col-lg-12">
-            <div class="card border-0 bg-dark-subtle shadow-sm overflow-hidden">
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover align-middle mb-0">
-                        <thead class="bg-dark bg-opacity-50">
-                            <tr>
-                                <th class="border-0 px-3 py-2 text-muted small fw-bold" style="font-size: 0.7rem;">ID</th>
-                                <th class="border-0 px-3 py-2 text-muted small fw-bold" style="font-size: 0.7rem;">Pedido</th>
-                                <th class="border-0 px-3 py-2 text-muted small fw-bold" style="font-size: 0.7rem;">Status</th>
-                                <th class="border-0 px-3 py-2 text-muted small fw-bold" style="font-size: 0.7rem;">Classe</th>
-                                <th class="border-0 px-3 py-2 text-muted small fw-bold" style="font-size: 0.7rem;">Valor Estimado</th>
-                                <th class="border-0 px-3 py-2 text-muted small fw-bold text-center" style="font-size: 0.7rem;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for request in requests %}
-                            <tr>
-                                <td class="px-3 py-2 text-muted small">#{{ request.id }}</td>
-                                <td class="px-3 py-2">
-                                    <div class="fw-bold text-white small">{{ request.title }}</div>
-                                    <div class="small text-muted" style="font-size: 0.65rem;">{{ request.request_date.strftime('%d/%m/%Y') }}</div>
-                                </td>
-                                <td class="px-3 py-2">
-                                    {% set status_colors = {
-                                        'aberto': 'info',
-                                        'em_cotacao': 'warning',
-                                        'aprovado': 'primary',
-                                        'pedido_emitido': 'success',
-                                        'recebido': 'light',
-                                        'cancelado': 'danger'
-                                    } %}
-                                    <span class="badge bg-{{ status_colors.get(request.status, 'secondary') }} bg-opacity-10 text-{{ status_colors.get(request.status, 'secondary') }} rounded-pill px-2 py-1" style="font-size: 0.65rem;">
-                                        {{ request.get_status_display() }}
-                                    </span>
-                                </td>
-                                <td class="px-3 py-2">
-                                    <span class="text-white-50 small" style="font-size: 0.75rem;">{{ request.get_classe_display() }}</span>
-                                </td>
-                                <td class="px-3 py-2 fw-bold text-success small">
-                                    R$ {{ "{:,.2f}".format(request.estimated_value or 0).replace(',', 'X').replace('.', ',').replace('X', '.') }}
-                                </td>
-                                <td class="px-3 py-2 text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="{{ url_for('view_request', id=request.id) }}" class="btn btn-outline-light border-0 opacity-75 hover-opacity-100 p-1">
-                                            <i class="fas fa-eye fa-sm"></i>
-                                        </a>
-                                        <a href="{{ url_for('edit_request', id=request.id) }}" class="btn btn-outline-light border-0 opacity-75 hover-opacity-100 p-1">
-                                            <i class="fas fa-edit fa-sm"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted mb-1"
+                        style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Status</label>
+                    {{ search_form.status_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
                 </div>
-            </div>
-            
-            <!-- Minimalist Pagination -->
-            {% if pagination.pages > 1 %}
-            <nav aria-label="Navegação de páginas" class="mt-4">
-                <ul class="pagination pagination-sm justify-content-center">
-                    <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
-                        <a class="page-link bg-dark border-secondary text-white" href="{{ url_for('dashboard', page=pagination.prev_num, **request.args|dict_replace('page', None)) if pagination.has_prev else '#' }}" tabindex="-1">Anterior</a>
-                    </li>
-                    
-                    {% for page_num in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
-                        {% if page_num %}
-                            <li class="page-item {{ 'active' if page_num == pagination.page }}">
-                                <a class="page-link {{ 'bg-primary border-primary' if page_num == pagination.page else 'bg-dark border-secondary text-white' }}" href="{{ url_for('dashboard', page=page_num, **request.args|dict_replace('page', None)) }}">
-                                    {{ page_num }}
-                                </a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled"><span class="page-link bg-dark border-secondary text-white">...</span></li>
-                        {% endif %}
-                    {% endfor %}
-
-                    <li class="page-item {{ 'disabled' if not pagination.has_next }}">
-                        <a class="page-link bg-dark border-secondary text-white" href="{{ url_for('dashboard', page=pagination.next_num, **request.args|dict_replace('page', None)) if pagination.has_next else '#' }}">Próxima</a>
-                    </li>
-                </ul>
-            </nav>
-            {% endif %}
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted mb-1"
+                        style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Prioridade</label>
+                    {{ search_form.priority_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted mb-1"
+                        style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Impacto</label>
+                    {{ search_form.impact_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label text-muted mb-1"
+                        style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Responsável</label>
+                    {{ search_form.responsible_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted mb-1"
+                        style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Classe</label>
+                    {{ search_form.classe_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted mb-1"
+                        style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Categoria</label>
+                    {{ search_form.categoria_filter(class="form-select form-select-sm bg-dark border-0 text-white") }}
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted mb-1"
+                        style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">De</label>
+                    {{ search_form.date_from(class="form-control form-control-sm bg-dark border-0 text-white") }}
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted mb-1"
+                        style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Até</label>
+                    {{ search_form.date_to(class="form-control form-control-sm bg-dark border-0 text-white") }}
+                </div>
+                <div class="col-12 col-md-2 d-flex gap-1">
+                    <button type="submit" class="btn btn-sm btn-primary w-100">Filtrar</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-dark w-100">Limpar</a>
+                </div>
+            </form>
         </div>
     </div>
+
+    <!-- LAYOUT WITH COLLAPSIBLE SIDEBAR -->
+    <div class="d-flex gap-3 position-relative">
+        <!-- Main Content: In Progress (expands when drawer is closed) -->
+        <div class="flex-grow-1" id="mainContent">
+            <div class="mb-2 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <h5 class="mb-0 text-white fw-bold">
+                        <i class="fas fa-spinner fa-pulse me-2 text-primary"></i>
+                        Processos em Andamento
+                    </h5>
+                    <span class="badge bg-primary ms-2">{{ in_progress_requests|length }}</span>
+                </div>
+                <button class="btn btn-sm btn-outline-light border-0" id="toggleDrawer"
+                    onclick="toggleCompletedDrawer()">
+                    <i class="fas fa-check-circle me-1"></i>
+                    Finalizados ({{ completed_requests|length }})
+                    <i class="fas fa-chevron-left ms-1" id="drawerIcon"></i>
+                </button>
+            </div>
+
+            <div class="card border-0 bg-dark-subtle shadow-sm">
+                <div class="card-body p-2">
+                    {% if in_progress_requests %}
+                    {% for request in in_progress_requests %}
+                    <div class="p-3 mb-2 bg-dark rounded border border-secondary border-opacity-10 transition-hover">
+                        <div class="row align-items-start">
+                            <!-- Left: Main Info -->
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="badge bg-secondary bg-opacity-25 text-muted"
+                                        style="font-size: 0.65rem;">#{{ request.id }}</span>
+                                    {% set status_colors = {
+                                    'aberto': 'info',
+                                    'em_cotacao': 'warning',
+                                    'aprovado': 'primary',
+                                    'pedido_emitido': 'success',
+                                    'recebido': 'light',
+                                    'finalizado': 'success',
+                                    'cancelado': 'danger'
+                                    } %}
+                                    <span
+                                        class="badge bg-{{ status_colors.get(request.status, 'secondary') }} bg-opacity-10 text-{{ status_colors.get(request.status, 'secondary') }} rounded-pill"
+                                        style="font-size: 0.65rem;">
+                                        {{ request.get_status_display() }}
+                                    </span>
+
+                                    <!-- Deadline Badge -->
+                                    {% if request.delivery_deadline %}
+                                    {% if request.is_overdue %}
+                                    <span class="badge bg-danger text-white rounded-pill" style="font-size: 0.65rem;">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>ATRASADO {{
+                                        request.days_until_deadline|abs }} dias
+                                    </span>
+                                    {% elif request.days_until_deadline <= 3 %} <span
+                                        class="badge bg-warning text-dark rounded-pill" style="font-size: 0.65rem;">
+                                        <i class="fas fa-clock me-1"></i>{{ request.days_until_deadline }} dias
+                                        restantes
+                                        </span>
+                                        {% elif request.days_until_deadline <= 7 %} <span
+                                            class="badge bg-info text-dark rounded-pill" style="font-size: 0.65rem;">
+                                            <i class="fas fa-calendar me-1"></i>{{ request.days_until_deadline }} dias
+                                            restantes
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-success bg-opacity-25 text-success rounded-pill"
+                                                style="font-size: 0.65rem;">
+                                                <i class="fas fa-check me-1"></i>{{ request.days_until_deadline }} dias
+                                                restantes
+                                            </span>
+                                            {% endif %}
+                                            {% endif %}
+                                </div>
+                                <h6 class="text-white mb-2">{{ request.title }}</h6>
+                                <p class="text-muted small mb-2" style="font-size: 0.75rem;">{{
+                                    request.description[:100] }}{% if request.description|length > 100 %}...{% endif %}
+                                </p>
+                            </div>
+
+                            <!-- Middle: Details -->
+                            <div class="col-md-4">
+                                <div class="small text-muted d-flex flex-column gap-1" style="font-size: 0.7rem;">
+                                    <div><i class="fas fa-calendar me-2 opacity-50"></i><strong>Criado:</strong> {{
+                                        request.request_date.strftime('%d/%m/%Y') }}</div>
+                                    {% if request.delivery_deadline %}
+                                    <div><i class="fas fa-clock me-2 opacity-50"></i><strong>Prazo:</strong> {{
+                                        request.delivery_deadline.strftime('%d/%m/%Y') }}</div>
+                                    {% endif %}
+                                    <div><i class="fas fa-tag me-2 opacity-50"></i><strong>Classe:</strong> {{
+                                        request.get_classe_display() }}</div>
+                                    <div><i class="fas fa-user me-2 opacity-50"></i><strong>Responsável:</strong>
+                                        {% if request.responsible %}
+                                        {{ request.responsible.full_name }}
+                                        {% else %}
+                                        <span class="text-muted">Não definido</span>
+                                        {% endif %}
+                                    </div>
+                                    <div><i class="fas fa-sitemap me-2 opacity-50"></i><strong>Prioridade:</strong> {{
+                                        request.get_priority_display() }}</div>
+                                    <div><i
+                                            class="fas fa-exclamation-circle me-2 opacity-50"></i><strong>Impacto:</strong>
+                                        {{ request.get_impact_display() }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Value & Actions -->
+                            <div class="col-md-2 text-end">
+                                <div class="mb-2">
+                                    <div class="text-muted small mb-0" style="font-size: 0.65rem;">Valor Estimado</div>
+                                    <div class="fw-bold text-success">R$ {{ "{:,.2f}".format(request.estimated_value or
+                                        0).replace(',', 'X').replace('.', ',').replace('X', '.') }}</div>
+                                </div>
+                                {% if request.final_value %}
+                                <div class="mb-2">
+                                    <div class="text-muted small mb-0" style="font-size: 0.65rem;">Valor Final</div>
+                                    <div class="fw-bold text-warning">R$ {{
+                                        "{:,.2f}".format(request.final_value).replace(',', 'X').replace('.',
+                                        ',').replace('X', '.') }}</div>
+                                </div>
+                                {% endif %}
+                                <div class="btn-group btn-group-sm mt-2">
+                                    <a href="{{ url_for('view_request', id=request.id) }}"
+                                        class="btn btn-outline-light border-0 opacity-75 hover-opacity-100 p-1"
+                                        title="Visualizar">
+                                        <i class="fas fa-eye fa-sm"></i>
+                                    </a>
+                                    <a href="{{ url_for('edit_request', id=request.id) }}"
+                                        class="btn btn-outline-light border-0 opacity-75 hover-opacity-100 p-1"
+                                        title="Editar">
+                                        <i class="fas fa-edit fa-sm"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-center text-muted py-4 mb-0">Nenhum processo em andamento</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Collapsible Drawer: Completed Requests -->
+        <div class="completed-drawer" id="completedDrawer">
+            <div class="card border-0 bg-dark-subtle shadow-lg h-100">
+                <div class="card-header bg-dark border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 text-white fw-bold">
+                        <i class="fas fa-check-circle me-2 text-success"></i>
+                        Finalizados
+                    </h6>
+                    <button class="btn btn-sm btn-dark border-0" onclick="toggleCompletedDrawer()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="card-body p-2 overflow-auto">
+                    {% if completed_requests %}
+                    {% for request in completed_requests %}
+                    <div
+                        class="p-2 mb-2 bg-dark rounded border border-secondary border-opacity-10 transition-hover-small">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="mb-1">
+                                    <span class="badge bg-secondary bg-opacity-25 text-muted"
+                                        style="font-size: 0.6rem;">#{{ request.id }}</span>
+                                    {% set status_colors = {
+                                    'recebido': 'success',
+                                    'finalizado': 'info',
+                                    'cancelado': 'danger'
+                                    } %}
+                                    <span
+                                        class="badge bg-{{ status_colors.get(request.status, 'secondary') }} bg-opacity-10 text-{{ status_colors.get(request.status, 'secondary') }} rounded-pill"
+                                        style="font-size: 0.6rem;">
+                                        {{ request.get_status_display() }}
+                                    </span>
+                                </div>
+                                <h6 class="text-white small mb-1">{{ request.title }}</h6>
+                                <div class="text-muted" style="font-size: 0.65rem;">
+                                    {{ request.request_date.strftime('%d/%m/%Y') }}
+                                    {% if request.final_value %}
+                                    | R$ {{ "{:,.2f}".format(request.final_value).replace(',', 'X').replace('.',
+                                    ',').replace('X', '.') }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="text-end ms-2">
+                                <a href="{{ url_for('view_request', id=request.id) }}"
+                                    class="btn btn-outline-light btn-sm border-0 opacity-75 hover-opacity-100 p-1">
+                                    <i class="fas fa-eye fa-sm"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-center text-muted py-4 mb-0 small">Nenhum processo finalizado</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination.pages > 1 %}
+    <nav aria-label="Navegação de páginas" class="mt-4">
+        <ul class="pagination pagination-sm justify-content-center">
+            <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+                <a class="page-link bg-dark border-secondary text-white"
+                    href="{{ url_for('dashboard', page=pagination.prev_num, **request.args|dict_replace('page', None)) if pagination.has_prev else '#' }}"
+                    tabindex="-1">Anterior</a>
+            </li>
+
+            {% for page_num in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+            {% if page_num %}
+            <li class="page-item {{ 'active' if page_num == pagination.page }}">
+                <a class="page-link {{ 'bg-primary border-primary' if page_num == pagination.page else 'bg-dark border-secondary text-white' }}"
+                    href="{{ url_for('dashboard', page=page_num, **request.args|dict_replace('page', None)) }}">
+                    {{ page_num }}
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link bg-dark border-secondary text-white">...</span></li>
+            {% endif %}
+            {% endfor %}
+
+            <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+                <a class="page-link bg-dark border-secondary text-white"
+                    href="{{ url_for('dashboard', page=pagination.next_num, **request.args|dict_replace('page', None)) if pagination.has_next else '#' }}">Próxima</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 
 <style>
-    .bg-dark-subtle { background-color: #1a1d21 !important; }
-    .transition-hover { transition: transform 0.2s ease, background-color 0.2s ease; }
-    .transition-hover:hover { transform: translateY(-3px); background-color: #212529 !important; }
-    .scroll-hide::-webkit-scrollbar { display: none; }
-    .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
-    .hover-opacity-100:hover { opacity: 1 !important; }
-    .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.02); }
+    .bg-dark-subtle {
+        background-color: #1a1d21 !important;
+    }
+
+    .transition-hover {
+        transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    .transition-hover:hover {
+        transform: translateY(-2px);
+        background-color: #212529 !important;
+    }
+
+    .transition-hover-small:hover {
+        background-color: #212529 !important;
+    }
+
+    .scroll-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scroll-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .hover-opacity-100:hover {
+        opacity: 1 !important;
+    }
+
+    /* Collapsible Drawer Styles */
+    .completed-drawer {
+        width: 350px;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        position: sticky;
+        top: 20px;
+        height: calc(100vh - 100px);
+        max-height: 800px;
+    }
+
+    .completed-drawer.hidden {
+        transform: translateX(400px);
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+    }
+
+    #mainContent {
+        transition: margin-right 0.3s ease;
+    }
+
+    @media (max-width: 992px) {
+        .completed-drawer {
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            max-height: 100vh;
+            z-index: 1050;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+    }
 </style>
+
+<script>
+    function toggleCompletedDrawer() {
+        const drawer = document.getElementById('completedDrawer');
+        const icon = document.getElementById('drawerIcon');
+        const isHidden = drawer.classList.toggle('hidden');
+
+        // Toggle icon
+        if (isHidden) {
+            icon.classList.remove('fa-chevron-left');
+            icon.classList.add('fa-chevron-right');
+        } else {
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-left');
+        }
+
+        // Save state to localStorage
+        localStorage.setItem('completedDrawerHidden', isHidden);
+    }
+
+    // Restore drawer state on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        const isHidden = localStorage.getItem('completedDrawerHidden') === 'true';
+        if (isHidden) {
+            toggleCompletedDrawer();
+        }
+    });
+</script>
 {% endblock %}

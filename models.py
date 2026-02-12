@@ -37,6 +37,8 @@ class AcquisitionRequest(db.Model):
     estimated_value = db.Column(db.Numeric(10, 2))  # Valor estimado para fase de orçamento
     final_value = db.Column(db.Numeric(10, 2))      # Valor final para fase de compra/entrega
     request_date = db.Column(db.Date, nullable=False, default=date.today)
+    delivery_deadline = db.Column(db.Date)  # Prazo de entrega (opcional)
+    deadline_alert_sent = db.Column(db.Boolean, default=False, nullable=False)  # Flag para controlar envio de alerta
     classe = db.Column(db.String(50), nullable=False, default='ensino')  # Ensino ou Manutenção
     categoria = db.Column(db.String(100), nullable=False, default='material')  # Serviço ou Material (podem ser múltiplas separadas por vírgula)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -57,6 +59,7 @@ class AcquisitionRequest(db.Model):
         ('aprovado', 'Aprovado'),
         ('pedido_emitido', 'Pedido Emitido'),
         ('recebido', 'Recebido'),
+        ('finalizado', 'Finalizado'),
         ('cancelado', 'Cancelado')
     ]
     
@@ -116,6 +119,29 @@ class AcquisitionRequest(db.Model):
         if len(display_names) > 1:
             return ' e '.join(display_names)
         return display_names[0] if display_names else 'Não definida'
+    
+    @property
+    def is_overdue(self):
+        """Verifica se o prazo de entrega foi ultrapassado"""
+        if not self.delivery_deadline:
+            return False
+        return date.today() > self.delivery_deadline
+    
+    @property
+    def days_until_deadline(self):
+        """Retorna número de dias até o prazo (negativo se atrasado)"""
+        if not self.delivery_deadline:
+            return None
+        delta = self.delivery_deadline - date.today()
+        return delta.days
+    
+    def is_in_progress(self):
+        """Verifica se o pedido está em andamento"""
+        return self.status not in ['recebido', 'cancelado']
+    
+    def is_completed(self):
+        """Verifica se o pedido foi finalizado"""
+        return self.status in ['recebido', 'finalizado', 'cancelado']
     
     def __repr__(self):
         return f'<AcquisitionRequest {self.title}>'

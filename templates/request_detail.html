@@ -16,15 +16,17 @@
                         <i class="fas fa-edit me-1"></i>Editar
                     </a>
                     <div class="btn-group">
-                        <a href="{{ url_for('generate_request_pdf_route', id=request_obj.id) }}" class="btn btn-sm btn-success">
+                        <a href="{{ url_for('generate_request_pdf_route', id=request_obj.id) }}"
+                            class="btn btn-sm btn-success">
                             <i class="fas fa-file-pdf me-1"></i>PDF
                         </a>
-                        <a href="{{ url_for('export_excel_request', id=request_obj.id) }}" class="btn btn-sm btn-success">
+                        <a href="{{ url_for('export_excel_request', id=request_obj.id) }}"
+                            class="btn btn-sm btn-success">
                             <i class="fas fa-file-excel me-1"></i>Excel
                         </a>
                     </div>
-                    <form method="POST" action="{{ url_for('delete_request', id=request_obj.id) }}" 
-                          class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.')">
+                    <form method="POST" action="{{ url_for('delete_request', id=request_obj.id) }}" class="d-inline"
+                        onsubmit="return confirm('Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.')">
                         <button type="submit" class="btn btn-sm btn-danger">
                             <i class="fas fa-trash me-1"></i>Excluir
                         </button>
@@ -33,19 +35,21 @@
             </div>
             <div class="card-body">
                 <h4 class="card-title">{{ request_obj.title }}</h4>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-3">
                         <strong>Status:</strong>
                         {% set status_classes = {
-                            'aberto': 'info',
-                            'em_cotacao': 'warning',
-                            'aprovado': 'primary',
-                            'pedido_emitido': 'success',
-                            'recebido': 'dark',
-                            'cancelado': 'danger'
+                        'aberto': 'info',
+                        'em_cotacao': 'warning',
+                        'aprovado': 'primary',
+                        'pedido_emitido': 'success',
+                        'recebido': 'dark',
+                        'finalizado': 'success',
+                        'cancelado': 'danger'
                         } %}
-                        <span class="badge bg-{{ status_classes.get(request_obj.status, 'secondary') }} text-white ms-2">
+                        <span
+                            class="badge bg-{{ status_classes.get(request_obj.status, 'secondary') }} text-white ms-2">
                             {{ request_obj.get_status_display() }}
                         </span>
                     </div>
@@ -65,35 +69,37 @@
                         <strong>Criado por:</strong> {{ request_obj.creator.full_name }}
                     </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <strong>Classe:</strong>
                         {% set classe_classes = {
-                            'ensino': 'info',
-                            'manutencao': 'secondary',
-                            'administrativo': 'primary'
+                        'ensino': 'info',
+                        'manutencao': 'secondary',
+                        'administrativo': 'primary'
                         } %}
                         {% set classe_names = {
-                            'ensino': 'Ensino',
-                            'manutencao': 'Manutenção',
-                            'administrativo': 'Administrativo'
+                        'ensino': 'Ensino',
+                        'manutencao': 'Manutenção',
+                        'administrativo': 'Administrativo'
                         } %}
-                        <span class="badge bg-{{ classe_classes.get(request_obj.classe, 'secondary') }} text-white ms-1">
+                        <span
+                            class="badge bg-{{ classe_classes.get(request_obj.classe, 'secondary') }} text-white ms-1">
                             {{ classe_names.get(request_obj.classe, request_obj.classe) }}
                         </span>
                     </div>
                     <div class="col-md-4">
                         <strong>Categoria:</strong>
                         {% set categoria_classes = {
-                            'material': 'success',
-                            'servico': 'warning'
+                        'material': 'success',
+                        'servico': 'warning'
                         } %}
                         {% set categoria_names = {
-                            'material': 'Material',
-                            'servico': 'Serviço'
+                        'material': 'Material',
+                        'servico': 'Serviço'
                         } %}
-                        <span class="badge bg-{{ categoria_classes.get(request_obj.categoria, 'secondary') }} text-white ms-1">
+                        <span
+                            class="badge bg-{{ categoria_classes.get(request_obj.categoria, 'secondary') }} text-white ms-1">
                             {{ categoria_names.get(request_obj.categoria, request_obj.categoria) }}
                         </span>
                     </div>
@@ -102,37 +108,62 @@
                         {{ request_obj.request_date.strftime('%d/%m/%Y') }}
                     </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>Responsável:</strong>
                         {% if request_obj.responsible %}
-                            {{ request_obj.responsible.full_name }}
+                        {{ request_obj.responsible.full_name }}
                         {% else %}
-                            <span class="text-muted">Não definido</span>
+                        <span class="text-muted">Não definido</span>
                         {% endif %}
                     </div>
+                    <div class="col-md-6">
+                        <strong>Prazo de Entrega:</strong>
+                        {% if request_obj.delivery_deadline %}
+                        {{ request_obj.delivery_deadline.strftime('%d/%m/%Y') }}
+                        {% if request_obj.is_overdue %}
+                        <span class="badge bg-danger text-white ms-2">
+                            <i class="fas fa-exclamation-triangle me-1"></i>ATRASADO {{
+                            request_obj.days_until_deadline|abs }} dias
+                        </span>
+                        {% elif request_obj.days_until_deadline <= 3 %} <span class="badge bg-warning text-dark ms-2">
+                            <i class="fas fa-clock me-1"></i>{{ request_obj.days_until_deadline }} dias restantes
+                            </span>
+                            {% elif request_obj.days_until_deadline <= 7 %} <span class="badge bg-info text-dark ms-2">
+                                <i class="fas fa-calendar me-1"></i>{{ request_obj.days_until_deadline }} dias restantes
+                                </span>
+                                {% else %}
+                                <span class="badge bg-success text-white ms-2">
+                                    <i class="fas fa-check me-1"></i>{{ request_obj.days_until_deadline }} dias
+                                    restantes
+                                </span>
+                                {% endif %}
+                                {% else %}
+                                <span class="text-muted">Não definido</span>
+                                {% endif %}
+                    </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>Valor Estimado:</strong>
                         {% if request_obj.estimated_value %}
-                            <span class="text-success fw-bold">R$ {{ "%.2f"|format(request_obj.estimated_value) }}</span>
+                        <span class="text-success fw-bold">R$ {{ "%.2f"|format(request_obj.estimated_value) }}</span>
                         {% else %}
-                            <span class="text-muted">Não informado</span>
+                        <span class="text-muted">Não informado</span>
                         {% endif %}
                     </div>
                     <div class="col-md-6">
                         <strong>Valor Final:</strong>
                         {% if request_obj.final_value %}
-                            <span class="text-warning fw-bold">R$ {{ "%.2f"|format(request_obj.final_value) }}</span>
+                        <span class="text-warning fw-bold">R$ {{ "%.2f"|format(request_obj.final_value) }}</span>
                         {% else %}
-                            <span class="text-muted">Não informado</span>
+                        <span class="text-muted">Não informado</span>
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>Criado no sistema:</strong>
@@ -145,14 +176,14 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="mb-3">
                     <strong>Descrição:</strong>
                     <div class="mt-2 p-3 bg-body-secondary rounded">
                         {{ request_obj.description | replace('\n', '<br>') | safe }}
                     </div>
                 </div>
-                
+
                 {% if request_obj.observations %}
                 <div class="mb-3">
                     <strong>Observações:</strong>
@@ -163,7 +194,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <!-- Attachments Card -->
         {% if request_obj.attachments.count() > 0 %}
         <div class="card mb-4">
@@ -181,19 +212,20 @@
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1">
                                         <i class="fas fa-file me-2"></i>
-                                        <a href="{{ url_for('download_attachment', id=attachment.id) }}" 
-                                           target="_blank" class="text-decoration-none">
+                                        <a href="{{ url_for('download_attachment', id=attachment.id) }}" target="_blank"
+                                            class="text-decoration-none">
                                             {{ attachment.original_filename }}
                                         </a>
                                     </h6>
                                     <small class="text-muted">
-                                        {{ "%.1f"|format(attachment.file_size / 1024) }} KB • 
+                                        {{ "%.1f"|format(attachment.file_size / 1024) }} KB •
                                         {{ attachment.upload_date.strftime('%d/%m/%Y') }} •
                                         {{ attachment.uploaded_by.full_name }}
                                     </small>
                                 </div>
-                                <form method="POST" action="{{ url_for('delete_attachment', id=attachment.id) }}" 
-                                      class="ms-2" onsubmit="return confirm('Tem certeza que deseja excluir este anexo?')">
+                                <form method="POST" action="{{ url_for('delete_attachment', id=attachment.id) }}"
+                                    class="ms-2"
+                                    onsubmit="return confirm('Tem certeza que deseja excluir este anexo?')">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -207,7 +239,7 @@
         </div>
         {% endif %}
     </div>
-    
+
     <!-- Status History Sidebar -->
     <div class="col-lg-4">
         <div class="card">
@@ -218,35 +250,35 @@
             </div>
             <div class="card-body">
                 {% if status_history %}
-                    <div class="timeline">
-                        {% for change in status_history %}
-                        <div class="timeline-item mb-3">
-                            <div class="timeline-marker">
-                                <i class="fas fa-circle"></i>
-                            </div>
-                            <div class="timeline-content">
-                                <h6 class="mb-1">
-                                    {% if change.old_status %}
-                                        {{ change.get_old_status_display() }} → {{ change.get_new_status_display() }}
-                                    {% else %}
-                                        Pedido criado ({{ change.get_new_status_display() }})
-                                    {% endif %}
-                                </h6>
-                                <small class="text-muted">
-                                    {{ change.change_date.strftime('%d/%m/%Y às %H:%M') }} por 
-                                    {{ change.changed_by_user.full_name }}
-                                </small>
-                                {% if change.comments %}
-                                <div class="mt-2">
-                                    <small class="text-muted">{{ change.comments }}</small>
-                                </div>
-                                {% endif %}
-                            </div>
+                <div class="timeline">
+                    {% for change in status_history %}
+                    <div class="timeline-item mb-3">
+                        <div class="timeline-marker">
+                            <i class="fas fa-circle"></i>
                         </div>
-                        {% endfor %}
+                        <div class="timeline-content">
+                            <h6 class="mb-1">
+                                {% if change.old_status %}
+                                {{ change.get_old_status_display() }} → {{ change.get_new_status_display() }}
+                                {% else %}
+                                Pedido criado ({{ change.get_new_status_display() }})
+                                {% endif %}
+                            </h6>
+                            <small class="text-muted">
+                                {{ change.change_date.strftime('%d/%m/%Y às %H:%M') }} por
+                                {{ change.changed_by_user.full_name }}
+                            </small>
+                            {% if change.comments %}
+                            <div class="mt-2">
+                                <small class="text-muted">{{ change.comments }}</small>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
+                    {% endfor %}
+                </div>
                 {% else %}
-                    <p class="text-muted text-center">Nenhum histórico disponível</p>
+                <p class="text-muted text-center">Nenhum histórico disponível</p>
                 {% endif %}
             </div>
         </div>

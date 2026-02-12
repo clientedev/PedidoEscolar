@@ -54,6 +54,107 @@ def send_notification_email(recipient_email, recipient_name, request_obj):
     except Exception as e:
         app.logger.error(f"Failed to send email: {e}")
         return False, str(e)
+
+def send_deadline_alert_email(recipient_email, recipient_name, request_obj):
+    """Send deadline alert email using Resend"""
+    api_key = os.environ.get("RESEND_API_KEY")
+    from_email = os.environ.get("EMAIL_FROM")
+    
+    if not api_key or not from_email:
+        app.logger.error("RESEND_API_KEY or EMAIL_FROM not configured")
+        return False, "Configuração de e-mail ausente"
+        
+    try:
+        resend.api_key = api_key
+        
+        # Calculate days overdue
+        days_overdue = abs(request_obj.days_until_deadline) if request_obj.days_until_deadline else 0
+        
+        # Format deadline info
+        deadline_str = request_obj.delivery_deadline.strftime('%d/%m/%Y') if request_obj.delivery_deadline else 'Não definido'
+        
+        # Format specifications
+        specs = f"""
+        <ul>
+            <li><strong>ID:</strong> #{request_obj.id}</li>
+            <li><strong>Título:</strong> {request_obj.title}</li>
+            <li><strong>Status:</strong> {request_obj.get_status_display()}</li>
+            <li><strong>Prazo de Entrega:</strong> <span style="color: #dc3545; font-weight: bold;">{deadline_str}</span></li>
+            <li><strong>Dias de Atraso:</strong> <span style="color: #dc3545; font-weight: bold;">{days_overdue} dias</span></li>
+            <li><strong>Prioridade:</strong> {request_obj.get_priority_display()}</li>
+            <li><strong>Impacto:</strong> {request_obj.get_impact_display()}</li>
+            <li><strong>Descrição:</strong> {request_obj.description}</li>
+        </ul>
+        """
+        
+        params = {
+            "from": from_email,
+            "to": [recipient_email],
+            "subject": f"⚠️ ALERTA DE PRAZO VENCIDO: {request_obj.title} (ID: #{request_obj.id})",
+            "html": f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background-color: #dc3545; color: white; padding: 20px; text-align: center;">
+                    <h2 style="margin: 0;">⚠️ Alerta de Prazo Vencido</h2>
+                </div>
+                <div style="padding: 20px; background-color: #f8f9fa;">
+                    <p>Olá <strong>{recipient_name}</strong>,</p>
+                    <p style="color: #dc3545; font-weight: bold;">O seguinte pedido de aquisição está com o prazo de entrega VENCIDO:</p>
+                    {specs}
+                    <p style="margin-top: 20px;">Por favor, acesse o sistema e tome as providências necessárias com urgência.</p>
+                </div>
+                <div style="background-color: #343a40; color: white; padding: 10px; text-align: center; font-size: 12px;">
+                    Sistema de Gestão de Aquisições - Senai Morvan Figueiredo
+                </div>
+            </div>
+            """,
+        }
+        r = resend.Emails.send(params)
+        return True, recipient_email
+    except Exception as e:
+        app.logger.error(f"Failed to send deadline alert email: {e}")
+        return False, str(e)
+
+def check_and_send_deadline_alerts():
+    """Check for overdue requests and send alerts if not already sent"""
+    try:
+        # Find all requests with overdue deadlines that haven't received alerts yet
+        overdue_requests = AcquisitionRequest.query.filter(
+            AcquisitionRequest.delivery_deadline.isnot(None),
+            AcquisitionRequest.delivery_deadline < date.today(),
+            AcquisitionRequest.deadline_alert_sent == False,
+            AcquisitionRequest.status.notin_(['recebido', 'finalizado', 'cancelado'])  # Only active requests
+        ).all()
+        
+        for request_obj in overdue_requests:
+            emails_sent = []
+            
+            # Send to responsible user
+            if request_obj.responsible_id:
+                responsible = db.session.get(User, request_obj.responsible_id)
+                if responsible and responsible.email:
+                    success, info = send_deadline_alert_email(responsible.email, responsible.full_name, request_obj)
+                    if success:
+                        emails_sent.append(f"responsável: {info}")
+            
+            # Send to creator
+            if request_obj.created_by_id:
+                creator = db.session.get(User, request_obj.created_by_id)
+                if creator and creator.email:
+                    # Don't send duplicate if creator is also responsible
+                    if not request_obj.responsible_id or request_obj.responsible_id != request_obj.created_by_id:
+                        success, info = send_deadline_alert_email(creator.email, creator.full_name, request_obj)
+                        if success:
+                            emails_sent.append(f"criador: {info}")
+            
+            # Mark alert as sent
+            if emails_sent:
+                request_obj.deadline_alert_sent = True
+                db.session.commit()
+                app.logger.info(f"Alerta de prazo enviado para pedido #{request_obj.id}: {', '.join(emails_sent)}")
+    
+    except Exception as e:
+        app.logger.error(f"Error checking deadline alerts: {e}")
+
 from forms import LoginForm, AcquisitionRequestForm, EditRequestForm, UserForm, SearchForm, FirstPasswordForm, BulkImportForm
 from pdf_generator import generate_request_pdf, generate_general_report
 from excel_generator import generate_requests_excel, generate_request_excel
@@ -91,10 +192,14 @@ def save_file(file):
         app.logger.error(f"Erro no save_file: {e}")
         return None, None, None, None
 
+
 @app.route('/')
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    # Check for overdue deadlines and send alerts
+    check_and_send_deadline_alerts()
+    
     # Get filter parameters
     search_form = SearchForm()
     search = request.args.get('search', '')
@@ -118,6 +223,7 @@ def dashboard():
     
     if status_filter:
         query = query.filter(AcquisitionRequest.status == status_filter)
+
 
     if priority_filter:
         query = query.filter(AcquisitionRequest.priority == priority_filter)
@@ -201,8 +307,14 @@ def dashboard():
     total_estimated = sum([req.estimated_value or 0 for req in all_filtered_requests])
     total_final = sum([req.final_value or 0 for req in all_filtered_requests])
     
+    # Separate into in-progress and completed
+    in_progress_requests = [req for req in requests if req.is_in_progress()]
+    completed_requests = [req for req in requests if req.is_completed()]
+    
     return render_template('dashboard.html', 
-                         requests=requests, 
+                         requests=requests,
+                         in_progress_requests=in_progress_requests,
+                         completed_requests=completed_requests,
                          pagination=requests_pagination,
                          search_form=search_form,
                          total_requests=total_requests,
@@ -350,6 +462,7 @@ def new_request():
         request_obj.estimated_value = form.estimated_value.data
         request_obj.final_value = form.final_value.data
         request_obj.request_date = form.request_date.data
+        request_obj.delivery_deadline = form.delivery_deadline.data  # Add deadline processing
         request_obj.created_by_id = current_user.id
         request_obj.responsible_id = form.responsible_id.data if form.responsible_id.data and form.responsible_id.data > 0 else None
         db.session.add(request_obj)
@@ -439,6 +552,13 @@ def edit_request(id):
         request_obj.estimated_value = form.estimated_value.data
         request_obj.final_value = form.final_value.data
         request_obj.request_date = form.request_date.data
+        
+        # Handle deadline update - reset alert if deadline changed
+        old_deadline = request_obj.delivery_deadline
+        request_obj.delivery_deadline = form.delivery_deadline.data
+        if old_deadline != request_obj.delivery_deadline:
+            request_obj.deadline_alert_sent = False  # Reset alert flag if deadline changed
+        
         request_obj.responsible_id = form.responsible_id.data if form.responsible_id.data and form.responsible_id.data > 0 else None
         request_obj.updated_at = datetime.utcnow()
         
@@ -523,6 +643,7 @@ def edit_request(id):
         form.estimated_value.data = request_obj.estimated_value
         form.final_value.data = request_obj.final_value
         form.request_date.data = request_obj.request_date
+        form.delivery_deadline.data = request_obj.delivery_deadline  # Add deadline field
         form.responsible_id.data = request_obj.responsible_id or 0
         if request_obj.categoria:
             cats = request_obj.categoria.split(',')

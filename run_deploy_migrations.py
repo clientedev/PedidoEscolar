@@ -17,6 +17,10 @@ def run_migrations():
         
         # 2. Verificar e adicionar colunas específicas que podem ter sido adicionadas após a criação inicial
         with db.engine.begin() as conn:
+            # Detectar dialeto para tipos específicos
+            is_postgres = db.engine.url.drivername.startswith('postgresql')
+            blob_type = 'BYTEA' if is_postgres else 'BLOB'
+            
             # Tabela: acquisition_request
             columns_req = [c['name'] for c in inspector.get_columns('acquisition_request')]
             
@@ -39,17 +43,27 @@ def run_migrations():
             if 'classe' not in columns_req:
                 conn.execute(text("ALTER TABLE acquisition_request ADD COLUMN classe VARCHAR(50) DEFAULT 'ensino' NOT NULL"))
                 print("Adicionada coluna 'classe' em 'acquisition_request'")
+            
+            if 'delivery_deadline' not in columns_req:
+                conn.execute(text("ALTER TABLE acquisition_request ADD COLUMN delivery_deadline DATE"))
+                print("Adicionada coluna 'delivery_deadline' em 'acquisition_request'")
+            
+            if 'deadline_alert_sent' not in columns_req:
+                conn.execute(text("ALTER TABLE acquisition_request ADD COLUMN deadline_alert_sent BOOLEAN DEFAULT FALSE NOT NULL"))
+                print("Adicionada coluna 'deadline_alert_sent' em 'acquisition_request'")
 
             # Tabela: attachment
             columns_att = [c['name'] for c in inspector.get_columns('attachment')]
             if 'file_content' not in columns_att:
-                conn.execute(text("ALTER TABLE attachment ADD COLUMN file_content BYTEA"))
-                print("Adicionada coluna 'file_content' em 'attachment'")
+                conn.execute(text(f"ALTER TABLE attachment ADD COLUMN file_content {blob_type}"))
+                print(f"Adicionada coluna 'file_content' ({blob_type}) em 'attachment'")
 
             # Tabela: user
             columns_user = [c['name'] for c in inspector.get_columns('user')]
             if 'needs_password_reset' not in columns_user:
-                conn.execute(text("ALTER TABLE \"user\" ADD COLUMN needs_password_reset BOOLEAN DEFAULT FALSE NOT NULL"))
+                # Usar aspas duplas apenas se necessário para evitar erros em alguns bancos
+                user_table = '"user"' if is_postgres else 'user'
+                conn.execute(text(f"ALTER TABLE {user_table} ADD COLUMN needs_password_reset BOOLEAN DEFAULT FALSE NOT NULL"))
                 print("Adicionada coluna 'needs_password_reset' em 'user'")
 
         print("Migrações concluídas com sucesso!")

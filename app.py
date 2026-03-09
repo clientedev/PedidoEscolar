@@ -55,31 +55,41 @@ with app.app_context():
     import models
     import routes
     
-    # Run automatic migrations
+    # Initialize database safely
     try:
-        import run_deploy_migrations
-        run_deploy_migrations.run_migrations()
+        # Create all tables first
+        db.create_all()
+        
+        # Run automatic migrations if available
+        try:
+            import run_deploy_migrations
+            run_deploy_migrations.run_migrations()
+        except Exception as e:
+            app.logger.warning(f"Migration error (non-critical): {e}")
+        
+        # Create default admin user if it doesn't exist
+        from models import User
+        from werkzeug.security import generate_password_hash
+        
+        try:
+            admin_user = User.query.filter_by(username='admin').first()
+            if not admin_user:
+                admin_user = User()
+                admin_user.username = 'admin'
+                admin_user.email = 'admin@senaimorvanfigueiredo.edu.br'
+                admin_user.password_hash = generate_password_hash('admin123')
+                admin_user.is_admin = True
+                admin_user.full_name = 'Administrador'
+                db.session.add(admin_user)
+                db.session.commit()
+                app.logger.info("Admin user created: username=admin, password=admin123")
+        except Exception as e:
+            app.logger.warning(f"Admin user setup error (non-critical): {e}")
+            db.session.rollback()
+    
     except Exception as e:
-        app.logger.error(f"Migration error: {e}")
-    
-    # Create all tables
-    db.create_all()
-    
-    # Create default admin user if it doesn't exist
-    from models import User
-    from werkzeug.security import generate_password_hash
-    
-    admin_user = User.query.filter_by(username='admin').first()
-    if not admin_user:
-        admin_user = User()
-        admin_user.username = 'admin'
-        admin_user.email = 'admin@senaimorvanfigueiredo.edu.br'
-        admin_user.password_hash = generate_password_hash('admin123')
-        admin_user.is_admin = True
-        admin_user.full_name = 'Administrador'
-        db.session.add(admin_user)
-        db.session.commit()
-        print("Admin user created: username=admin, password=admin123")
+        app.logger.error(f"Critical database initialization error: {e}", exc_info=True)
+        app.logger.warning("App will start but may not function properly. Check DATABASE_URL environment variable.")
 
 @login_manager.user_loader
 def load_user(user_id):

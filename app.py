@@ -50,14 +50,23 @@ login_manager.login_message_category = 'info'
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-with app.app_context():
-    # Import models to ensure they're registered
-    import models
-    import routes
+# Import models and routes early so they're registered
+import models
+import routes
+
+# Database initialization flag
+_db_initialized = False
+
+def init_database():
+    """Initialize database, migrations, and default admin user on first request."""
+    global _db_initialized
+    if _db_initialized:
+        return
     
-    # Initialize database safely
+    _db_initialized = True
+    
     try:
-        # Create all tables first
+        # Create all tables
         db.create_all()
         
         # Run automatic migrations if available
@@ -88,8 +97,13 @@ with app.app_context():
             db.session.rollback()
     
     except Exception as e:
-        app.logger.error(f"Critical database initialization error: {e}", exc_info=True)
-        app.logger.warning("App will start but may not function properly. Check DATABASE_URL environment variable.")
+        app.logger.error(f"Database initialization error: {e}", exc_info=True)
+
+@app.before_request
+def before_request():
+    """Initialize database on first request."""
+    with app.app_context():
+        init_database()
 
 @login_manager.user_loader
 def load_user(user_id):

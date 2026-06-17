@@ -1,4 +1,4 @@
-// Custom JavaScript for Escola Morvan Figueiredo Acquisition System
+// Custom JavaScript for 121 - Escola Senai "Carlos Pasquale" Acquisition System
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips

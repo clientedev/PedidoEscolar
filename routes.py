@@ -103,7 +103,7 @@ def send_deadline_alert_email(recipient_email, recipient_name, request_obj):
                     <p style="margin-top: 20px;">Por favor, acesse o sistema e tome as providências necessárias com urgência.</p>
                 </div>
                 <div style="background-color: #343a40; color: white; padding: 10px; text-align: center; font-size: 12px;">
-                    Sistema de Gestão de Aquisições - Senai Morvan Figueiredo
+                    Sistema de Gestão de Aquisições - 121 - Escola Senai "Carlos Pasquale"
                 </div>
             </div>
             """,

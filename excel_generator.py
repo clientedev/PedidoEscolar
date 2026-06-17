@@ -129,7 +129,7 @@ def generate_requests_excel(requests=None):
     ws2 = wb.create_sheet("Resumo")
     
     # Summary headers
-    ws2.cell(row=1, column=1, value="Escola SENAI \"Morvan Figueiredo\"").font = Font(bold=True, size=16)
+    ws2.cell(row=1, column=1, value='121 - Escola Senai "Carlos Pasquale"').font = Font(bold=True, size=16)
     ws2.cell(row=2, column=1, value="Relatório de Pedidos de Aquisição").font = Font(bold=True, size=14)
     ws2.cell(row=3, column=1, value=f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
     
@@ -161,7 +161,7 @@ def generate_request_excel(request_id):
     ws.title = "Detalhes do Pedido"
     
     # Title
-    ws.cell(row=1, column=1, value="Escola SENAI \"Morvan Figueiredo\"").font = Font(bold=True, size=16)
+    ws.cell(row=1, column=1, value='121 - Escola Senai "Carlos Pasquale"').font = Font(bold=True, size=16)
     ws.cell(row=2, column=1, value="Detalhes do Pedido de Aquisição").font = Font(bold=True, size=14)
     
     # Request details

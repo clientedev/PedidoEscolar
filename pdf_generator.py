@@ -34,7 +34,7 @@ def generate_request_pdf(request_obj):
     )
     
     # Cabeçalho
-    story.append(Paragraph("Escola Morvan Figueiredo", title_style))
+    story.append(Paragraph('121 - Escola Senai "Carlos Pasquale"', title_style))
     story.append(Paragraph("Sistema de Controle de Aquisições", styles['Normal']))
     story.append(Spacer(1, 20))
     
@@ -186,7 +186,7 @@ def generate_general_report(requests=None):
     )
     
     # Cabeçalho
-    story.append(Paragraph("Escola Morvan Figueiredo", title_style))
+    story.append(Paragraph('121 - Escola Senai "Carlos Pasquale"', title_style))
     story.append(Paragraph("Relatório Geral de Aquisições", styles['Normal']))
     story.append(Spacer(1, 20))
     
@@ -287,7 +287,7 @@ def generate_general_report(requests=None):
         textColor=colors.grey
     )
     story.append(Paragraph(f"Relatório gerado em {datetime.now().strftime('%d/%m/%Y às %H:%M')}", footer_style))
-    story.append(Paragraph("Escola Morvan Figueiredo - Sistema de Controle de Aquisições", footer_style))
+    story.append(Paragraph('121 - Escola Senai "Carlos Pasquale" - Sistema de Controle de Aquisições', footer_style))
     
     doc.build(story)
     buffer.seek(0)
